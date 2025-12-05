@@ -31,10 +31,10 @@ const { isLoading, isError } = useNodesQuery()
   justify-content: center;
   height: 100vh;
   font-size: 18px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
 .error-state {
-  color: #ef4444;
+  color: var(--color-error);
 }
 </style>

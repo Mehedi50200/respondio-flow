@@ -4,6 +4,10 @@ import { VueQueryPlugin } from '@tanstack/vue-query'
 import App from './App.vue'
 import router from './router'
 import './style.css'
+import { useTheme } from './composables/useTheme'
+
+// Initialize theme before app mounts
+useTheme().initTheme()
 
 // Import Vue Flow styles
 import '@vue-flow/core/dist/style.css'

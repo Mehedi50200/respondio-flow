@@ -29,7 +29,7 @@ export function calculateNodePosition(
   const baseX = 400
   const baseY = 100
   const horizontalSpacing = 300
-  const verticalSpacing = 150
+  const verticalSpacing = 200
 
   // Cache for calculated positions to avoid recalculation
   const positionCache = new Map<string | number, Position>()

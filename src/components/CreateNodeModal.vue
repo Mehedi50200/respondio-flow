@@ -198,7 +198,7 @@ watch(() => props.isOpen, (isOpen) => {
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.2s;
+  animation: fadeIn var(--transition-base);
 }
 
 @keyframes fadeIn {
@@ -211,14 +211,15 @@ watch(() => props.isOpen, (isOpen) => {
 }
 
 .modal-container {
-  background: white;
-  border-radius: 12px;
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-xl);
   width: 90%;
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  animation: slideUp 0.2s;
+  box-shadow: var(--shadow-xl);
+  animation: slideUp var(--transition-base);
+  transition: background-color var(--transition-base);
 }
 
 @keyframes slideUp {
@@ -236,37 +237,37 @@ watch(() => props.isOpen, (isOpen) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px;
-  border-bottom: 1px solid #e5e7eb;
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .modal-header h2 {
   margin: 0;
   font-size: 20px;
   font-weight: 600;
-  color: #111827;
+  color: var(--color-text-primary);
 }
 
 .close-button {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 4px;
-  color: #6b7280;
+  padding: var(--spacing-xs);
+  color: var(--color-text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
-  transition: all 0.2s;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-base);
 }
 
 .close-button:hover {
-  background: #f3f4f6;
-  color: #111827;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
 }
 
 .modal-form {
-  padding: 24px;
+  padding: var(--spacing-lg);
 }
 
 .form-group {
@@ -275,10 +276,10 @@ watch(() => props.isOpen, (isOpen) => {
 
 .form-group label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-sm);
   font-size: 14px;
   font-weight: 500;
-  color: #374151;
+  color: var(--color-text-primary);
 }
 
 .form-group input,
@@ -286,19 +287,21 @@ watch(() => props.isOpen, (isOpen) => {
 .form-group select {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   font-size: 14px;
   font-family: inherit;
-  transition: border-color 0.2s;
+  color: var(--color-text-primary);
+  transition: border-color var(--transition-base), background-color var(--transition-base);
 }
 
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .form-group textarea {
@@ -308,19 +311,19 @@ watch(() => props.isOpen, (isOpen) => {
 
 .parent-info {
   padding: 10px 12px;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   font-size: 14px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
 .error-message {
   padding: 12px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 6px;
-  color: #dc2626;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-md);
+  color: var(--color-error);
   font-size: 14px;
   margin-bottom: 20px;
 }
@@ -335,21 +338,21 @@ watch(() => props.isOpen, (isOpen) => {
 .btn-primary,
 .btn-secondary {
   padding: 10px 20px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-base);
   border: none;
 }
 
 .btn-primary {
-  background: #3b82f6;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #2563eb;
+  background: var(--color-primary-hover);
 }
 
 .btn-primary:disabled {
@@ -358,12 +361,13 @@ watch(() => props.isOpen, (isOpen) => {
 }
 
 .btn-secondary {
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
 }
 
 .btn-secondary:hover {
-  background: #e5e7eb;
+  background: var(--color-border-light);
 }
 </style>
 

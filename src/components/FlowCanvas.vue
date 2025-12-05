@@ -11,7 +11,7 @@
         @nodes-change="onNodesChange"
         @node-click="onNodeClick"
       >
-        <Background pattern-color="#e5e7eb" :gap="16" />
+        <Background :pattern-color="patternColor" :gap="16" />
         <Controls />
       </VueFlow>
     </div>
@@ -28,6 +28,8 @@
       @close="closeCreateModal"
       @created="handleNodeCreated"
     />
+    
+    <ThemeToggle />
   </div>
 </template>
 
@@ -39,6 +41,7 @@ import { Controls } from '@vue-flow/controls'
 import { useNodesStore } from '@/stores'
 import { useNodesQuery } from '@/composables/useNodesQuery'
 import { useRouter } from 'vue-router'
+import { useTheme } from '@/composables/useTheme'
 import type { VueFlowNode, VueFlowEdge } from '@/types'
 
 // Import custom node components
@@ -46,19 +49,25 @@ import TriggerNode from './nodes/TriggerNode.vue'
 import SendMessageNode from './nodes/SendMessageNode.vue'
 import AddCommentNode from './nodes/AddCommentNode.vue'
 import BusinessHoursNode from './nodes/BusinessHoursNode.vue'
-import DateTimeConnectorNode from './nodes/DateTimeConnectorNode.vue'
 
 // Import create node components
 import CreateNodeModal from './CreateNodeModal.vue'
 import NodeDetailsDrawer from './NodeDetailsDrawer.vue'
+import ThemeToggle from './ThemeToggle.vue'
 
 const router = useRouter()
 const store = useNodesStore()
+const { theme } = useTheme()
 
 const isCreateModalOpen = ref(false)
 const selectedParentId = ref<string | number | null>(null)
 const isDrawerOpen = computed(() => !!router.currentRoute.value.params.id)
 const selectedNodeId = computed(() => router.currentRoute.value.params.id as string | undefined)
+
+// Dynamic pattern color based on theme
+const patternColor = computed(() => {
+  return theme.value === 'dark' ? '#374151' : '#9ca3af'
+})
 
 // Provide add-node handler to all nodes
 const handleAddNode = (nodeId: string) => {
@@ -131,11 +140,6 @@ watch(
 )
 
 // Create node modal handlers
-const openCreateModal = (parentId?: string | number | null) => {
-  selectedParentId.value = parentId || store.selectedNodeId
-  isCreateModalOpen.value = true
-}
-
 const closeCreateModal = () => {
   isCreateModalOpen.value = false
   selectedParentId.value = null
@@ -155,9 +159,10 @@ const handleNodeCreated = () => {
 .flow-canvas-container {
   width: 100%;
   height: 100vh;
-  background: #f9fafb;
+  background: var(--color-surface);
   position: relative;
   display: flex;
+  transition: background-color var(--transition-base);
 }
 
 .canvas-wrapper {
