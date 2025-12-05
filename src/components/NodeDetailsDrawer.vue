@@ -27,8 +27,20 @@
 
           <div class="business-hours-table">
             <div class="table-header">
-              <div class="header-cell">Day</div>
-              <div class="header-cell">Time</div>
+              <div class="header-cell">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2" />
+                  <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" />
+                </svg>
+                Day
+              </div>
+              <div class="header-cell">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                  <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                Time
+              </div>
             </div>
             <div class="table-body">
               <div v-for="day in daysOfWeek" :key="day.key" class="table-row">
@@ -439,6 +451,15 @@ watch(
   font-weight: 600;
   color: #374151;
   text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-cell svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .table-body {
@@ -475,8 +496,15 @@ watch(
 .time-inputs {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   flex: 1;
+}
+
+.time-inputs svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: #6b7280;
 }
 
 .time-input {

@@ -69,7 +69,7 @@ export function useCreateNodeMutation() {
         } as PayloadNode
       })
 
-      // Add the new node to calculate its position
+      // Add the new node to calculate positions for all nodes
       const allPayloadNodes = [...existingPayloadNodes, payloadNode]
       const vueFlowNodes = transformPayloadToNodes(allPayloadNodes)
       
@@ -79,8 +79,20 @@ export function useCreateNodeMutation() {
         throw new Error('Failed to create node')
       }
 
-      // Add to store
-      const nodes = [...store.nodes, vueFlowNode]
+      // Update positions for all existing nodes (they may have shifted)
+      const updatedNodes = store.nodes.map((existingNode) => {
+        const updatedNode = vueFlowNodes.find((n) => String(n.id) === String(existingNode.id))
+        if (updatedNode) {
+          return {
+            ...existingNode,
+            position: updatedNode.position,
+          }
+        }
+        return existingNode
+      })
+
+      // Add the new node
+      const nodes = [...updatedNodes, vueFlowNode]
 
       // Rebuild edges from all Vue Flow nodes
       const edges = buildEdgesFromVueFlowNodes(nodes)

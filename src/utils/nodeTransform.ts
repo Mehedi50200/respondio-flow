@@ -19,7 +19,7 @@ export function generateNodeId(): string {
 }
 
 /**
- * Calculate position for a node based on its parent and index
+ * Calculate position for a node based on its parent and siblings
  */
 export function calculateNodePosition(
   node: PayloadNode,
@@ -27,10 +27,10 @@ export function calculateNodePosition(
   index: number = 0
 ): Position {
   // Default positions
-  const baseX = 250
+  const baseX = 400
   const baseY = 100
-  const horizontalSpacing = 300
-  const verticalSpacing = 150
+  const horizontalSpacing = 350
+  const verticalSpacing = 120
 
   // If root node (parentId === -1)
   if (node.parentId === -1) {
@@ -57,10 +57,38 @@ export function calculateNodePosition(
     }
   }
 
-  // Regular nodes below parent
+  // Get all siblings (nodes with same parent)
+  const siblings = allNodes.filter(
+    (n) => String(n.parentId) === String(node.parentId) && String(n.id) !== String(node.id)
+  )
+
+  // Sort siblings by their order in the array
+  const siblingIndex = allNodes
+    .filter((n) => String(n.parentId) === String(node.parentId))
+    .findIndex((n) => String(n.id) === String(node.id))
+
+  // For regular nodes below parent, arrange vertically
+  // If parent is a connector, position directly below
+  const isConnectorChild = parent.type === 'dateTimeConnector'
+  
+  if (isConnectorChild) {
+    // Children of connectors go directly below
+    return {
+      x: parentX,
+      y: parentY + verticalSpacing,
+    }
+  }
+
+  // For children of regular nodes, arrange vertically
+  // Count how many siblings come before this node
+  const siblingsBefore = allNodes
+    .filter((n) => String(n.parentId) === String(node.parentId))
+    .slice(0, siblingIndex)
+    .length
+
   return {
     x: parentX,
-    y: parentY + verticalSpacing * (index + 1),
+    y: parentY + verticalSpacing + (siblingsBefore * verticalSpacing),
   }
 }
 
@@ -72,9 +100,25 @@ export function transformPayloadToNodes(payloadData: PayloadNode[]): VueFlowNode
     return []
   }
 
+  // Sort nodes: root first, then by parent-child relationships
+  // This ensures proper positioning order
+  const sortedNodes = [...payloadData].sort((a, b) => {
+    // Root nodes first
+    if (a.parentId === -1 && b.parentId !== -1) return -1
+    if (a.parentId !== -1 && b.parentId === -1) return 1
+    
+    // Same parent: maintain order
+    if (String(a.parentId) === String(b.parentId)) {
+      return 0
+    }
+    
+    // Sort by parentId to group siblings
+    return String(a.parentId).localeCompare(String(b.parentId))
+  })
+
   // First pass: create nodes with basic structure
-  const nodes = payloadData.map((item, index) => {
-    const position = calculateNodePosition(item, payloadData, index)
+  const nodes = sortedNodes.map((item, index) => {
+    const position = calculateNodePosition(item, sortedNodes, index)
 
     return {
       id: String(item.id),
