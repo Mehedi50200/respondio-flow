@@ -79,6 +79,7 @@ export function transformPayloadToNodes(payloadData) {
         ...item.data,
         label: item.name || getNodeLabel(item),
         description: getNodeDescription(item),
+        parentId: item.parentId, // Store parentId for edge reconstruction
         originalData: item, // Keep original data for reference
       },
     }
@@ -131,6 +132,66 @@ export function transformPayloadToEdges(payloadData) {
       label,
       style,
       animated: node.type === 'dateTimeConnector',
+    })
+  })
+
+  return edges
+}
+
+/**
+ * Build edges from Vue Flow nodes
+ * This function extracts parentId from Vue Flow node structure
+ * @param {Array} vueFlowNodes - Array of Vue Flow nodes
+ * @returns {Array} Transformed edges for Vue Flow
+ */
+export function buildEdgesFromVueFlowNodes(vueFlowNodes) {
+  if (!Array.isArray(vueFlowNodes)) {
+    return []
+  }
+
+  const edges = []
+
+  vueFlowNodes.forEach((node) => {
+    // Extract parentId from Vue Flow node structure
+    // Check originalData first (for nodes loaded from payload)
+    // Then check data.parentId (for newly created nodes)
+    const originalData = node.data?.originalData
+    const parentId = originalData?.parentId ?? node.data?.parentId ?? originalData?.parentId
+
+    // Skip root node (parentId === -1 or undefined/null)
+    if (parentId === -1 || parentId === undefined || parentId === null) {
+      return
+    }
+
+    const sourceId = String(parentId)
+    const targetId = String(node.id)
+
+    // Determine edge type based on node type
+    let edgeType = 'default'
+    let label = ''
+    let style = {}
+
+    // Check node type from originalData or node.type
+    const nodeType = originalData?.type ?? node.type
+
+    if (nodeType === 'dateTimeConnector') {
+      const connectorType = originalData?.data?.connectorType ?? node.data?.connectorType
+      edgeType = 'smoothstep'
+      label = connectorType === 'success' ? 'Success' : 'Failure'
+      style = {
+        stroke: connectorType === 'success' ? '#10b981' : '#ef4444',
+        strokeWidth: 2,
+      }
+    }
+
+    edges.push({
+      id: `edge-${sourceId}-${targetId}`,
+      source: sourceId,
+      target: targetId,
+      type: edgeType,
+      label,
+      style,
+      animated: nodeType === 'dateTimeConnector',
     })
   })
 

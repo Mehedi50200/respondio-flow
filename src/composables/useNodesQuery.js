@@ -3,6 +3,8 @@ import { useNodesStore } from '../stores/index.js'
 import {
   transformPayloadToNodes,
   transformPayloadToEdges,
+  buildEdgesFromVueFlowNodes,
+  createNewNode,
 } from '../utils/nodeTransform.js'
 
 /**
@@ -46,18 +48,24 @@ export function useCreateNodeMutation() {
   const store = useNodesStore()
 
   return useMutation({
-    mutationFn: async (newNode) => {
+    mutationFn: async (nodeData) => {
       // In a real app, this would be an API call
-      // For now, we'll simulate it by updating the store
-      const nodes = [...store.nodes, newNode]
-      const edges = transformPayloadToEdges(
-        nodes.map((n) => n.data.originalData || n)
-      )
+      // Create new node in payload format
+      const payloadNode = createNewNode(nodeData)
+      
+      // Transform to Vue Flow format
+      const vueFlowNode = transformPayloadToNodes([payloadNode])[0]
+      
+      // Add to store
+      const nodes = [...store.nodes, vueFlowNode]
+      
+      // Rebuild edges from all Vue Flow nodes
+      const edges = buildEdgesFromVueFlowNodes(nodes)
 
       store.setNodes(nodes)
       store.setEdges(edges)
 
-      return newNode
+      return vueFlowNode
     },
     onSuccess: () => {
       // Invalidate and refetch nodes query
@@ -79,9 +87,9 @@ export function useUpdateNodeMutation() {
       // In a real app, this would be an API call
       store.updateNode(nodeId, updates)
 
-      // Recalculate edges if parent changed
-      const nodes = store.nodes.map((n) => n.data.originalData || n)
-      const edges = transformPayloadToEdges(nodes)
+      // Rebuild edges from all Vue Flow nodes
+      // This handles parentId changes correctly
+      const edges = buildEdgesFromVueFlowNodes(store.nodes)
       store.setEdges(edges)
 
       return { nodeId, updates }
@@ -120,9 +128,8 @@ export function useDeleteNodeMutation() {
 
       deleteChildren(nodeId)
 
-      // Recalculate edges
-      const remainingNodes = store.nodes.map((n) => n.data.originalData || n)
-      const edges = transformPayloadToEdges(remainingNodes)
+      // Rebuild edges from remaining Vue Flow nodes
+      const edges = buildEdgesFromVueFlowNodes(store.nodes)
       store.setEdges(edges)
 
       return nodeId
