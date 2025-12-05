@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useNodesStore } from '../../stores/index.js'
+import { useNodesStore } from '../../stores/index'
+import type { VueFlowNode } from '@/types'
 
 describe('useNodesStore', () => {
   beforeEach(() => {
@@ -17,7 +18,7 @@ describe('useNodesStore', () => {
 
   it('should set nodes', () => {
     const store = useNodesStore()
-    const nodes = [
+    const nodes: VueFlowNode[] = [
       { id: '1', type: 'trigger', position: { x: 0, y: 0 }, data: {} },
       { id: '2', type: 'sendMessage', position: { x: 100, y: 100 }, data: {} },
     ]
@@ -41,7 +42,7 @@ describe('useNodesStore', () => {
 
   it('should add a node', () => {
     const store = useNodesStore()
-    const newNode = {
+    const newNode: VueFlowNode = {
       id: 'new-1',
       type: 'sendMessage',
       position: { x: 0, y: 0 },
@@ -56,7 +57,7 @@ describe('useNodesStore', () => {
 
   it('should update a node', () => {
     const store = useNodesStore()
-    const node = {
+    const node: VueFlowNode = {
       id: '1',
       type: 'sendMessage',
       position: { x: 0, y: 0 },
@@ -66,13 +67,13 @@ describe('useNodesStore', () => {
     store.addNode(node)
     store.updateNode('1', { data: { label: 'New Label' } })
 
-    expect(store.getNodeById('1').data.label).toBe('New Label')
+    expect(store.getNodeById('1')?.data.label).toBe('New Label')
   })
 
   it('should delete a node', () => {
     const store = useNodesStore()
-    const node1 = { id: '1', type: 'trigger', position: { x: 0, y: 0 }, data: {} }
-    const node2 = { id: '2', type: 'sendMessage', position: { x: 100, y: 100 }, data: {} }
+    const node1: VueFlowNode = { id: '1', type: 'trigger', position: { x: 0, y: 0 }, data: {} }
+    const node2: VueFlowNode = { id: '2', type: 'sendMessage', position: { x: 100, y: 100 }, data: {} }
 
     store.addNode(node1)
     store.addNode(node2)
@@ -84,7 +85,7 @@ describe('useNodesStore', () => {
 
   it('should get node by ID', () => {
     const store = useNodesStore()
-    const node = {
+    const node: VueFlowNode = {
       id: 'test-1',
       type: 'sendMessage',
       position: { x: 0, y: 0 },
@@ -102,7 +103,7 @@ describe('useNodesStore', () => {
 
   it('should update node position', () => {
     const store = useNodesStore()
-    const node = {
+    const node: VueFlowNode = {
       id: '1',
       type: 'sendMessage',
       position: { x: 0, y: 0 },
@@ -112,12 +113,12 @@ describe('useNodesStore', () => {
     store.addNode(node)
     store.updateNodePosition('1', { x: 100, y: 200 })
 
-    expect(store.getNodeById('1').position).toEqual({ x: 100, y: 200 })
+    expect(store.getNodeById('1')?.position).toEqual({ x: 100, y: 200 })
   })
 
   it('should set and clear selected node', () => {
     const store = useNodesStore()
-    const node = {
+    const node: VueFlowNode = {
       id: '1',
       type: 'sendMessage',
       position: { x: 0, y: 0 },
@@ -137,17 +138,17 @@ describe('useNodesStore', () => {
 
   it('should get children nodes', () => {
     const store = useNodesStore()
-    const parent = {
+    const parent: VueFlowNode = {
       id: 'parent',
       type: 'trigger',
       position: { x: 0, y: 0 },
-      data: { originalData: { id: 'parent', parentId: -1 } },
+      data: { originalData: { id: 'parent', parentId: -1, type: 'trigger', data: {} } },
     }
-    const child = {
+    const child: VueFlowNode = {
       id: 'child',
       type: 'sendMessage',
       position: { x: 100, y: 100 },
-      data: { originalData: { id: 'child', parentId: 'parent' } },
+      data: { originalData: { id: 'child', parentId: 'parent', type: 'sendMessage', data: {} } },
     }
 
     store.addNode(parent)

@@ -3,22 +3,29 @@
  * Converts the flat array structure to nodes and edges for Vue Flow
  */
 
+import type {
+  PayloadNode,
+  VueFlowNode,
+  VueFlowEdge,
+  Position,
+  NodeCreationData,
+} from '@/types'
+
 /**
  * Generate a unique node ID
- * @returns {string} Unique ID
  */
-export function generateNodeId() {
+export function generateNodeId(): string {
   return Math.random().toString(36).substring(2, 9)
 }
 
 /**
  * Calculate position for a node based on its parent and index
- * @param {Object} node - Node object
- * @param {Array} allNodes - All nodes array
- * @param {number} index - Index in siblings
- * @returns {Object} Position object with x and y
  */
-export function calculateNodePosition(node, allNodes, index = 0) {
+export function calculateNodePosition(
+  node: PayloadNode,
+  allNodes: PayloadNode[],
+  index: number = 0
+): Position {
   // Default positions
   const baseX = 250
   const baseY = 100
@@ -37,8 +44,8 @@ export function calculateNodePosition(node, allNodes, index = 0) {
   }
 
   // Get parent position (default if not set)
-  const parentX = parent.position?.x || baseX
-  const parentY = parent.position?.y || baseY
+  const parentX = (parent as any).position?.x || baseX
+  const parentY = (parent as any).position?.y || baseY
 
   // Calculate position based on node type
   if (node.type === 'dateTimeConnector') {
@@ -59,10 +66,8 @@ export function calculateNodePosition(node, allNodes, index = 0) {
 
 /**
  * Transform payload data to Vue Flow nodes format
- * @param {Array} payloadData - Raw payload data from JSON
- * @returns {Array} Transformed nodes for Vue Flow
  */
-export function transformPayloadToNodes(payloadData) {
+export function transformPayloadToNodes(payloadData: PayloadNode[]): VueFlowNode[] {
   if (!Array.isArray(payloadData)) {
     return []
   }
@@ -82,7 +87,7 @@ export function transformPayloadToNodes(payloadData) {
         parentId: item.parentId, // Store parentId for edge reconstruction
         originalData: item, // Keep original data for reference
       },
-    }
+    } as VueFlowNode
   })
 
   return nodes
@@ -90,15 +95,13 @@ export function transformPayloadToNodes(payloadData) {
 
 /**
  * Transform payload data to Vue Flow edges format
- * @param {Array} payloadData - Raw payload data from JSON
- * @returns {Array} Transformed edges for Vue Flow
  */
-export function transformPayloadToEdges(payloadData) {
+export function transformPayloadToEdges(payloadData: PayloadNode[]): VueFlowEdge[] {
   if (!Array.isArray(payloadData)) {
     return []
   }
 
-  const edges = []
+  const edges: VueFlowEdge[] = []
 
   payloadData.forEach((node) => {
     // Skip root node (parentId === -1)
@@ -110,9 +113,9 @@ export function transformPayloadToEdges(payloadData) {
     const targetId = String(node.id)
 
     // Determine edge type based on node type
-    let edgeType = 'default'
-    let label = ''
-    let style = {}
+    let edgeType: string = 'default'
+    let label: string = ''
+    let style: { stroke?: string; strokeWidth?: number } = {}
 
     if (node.type === 'dateTimeConnector') {
       const connectorType = node.data?.connectorType
@@ -141,22 +144,20 @@ export function transformPayloadToEdges(payloadData) {
 /**
  * Build edges from Vue Flow nodes
  * This function extracts parentId from Vue Flow node structure
- * @param {Array} vueFlowNodes - Array of Vue Flow nodes
- * @returns {Array} Transformed edges for Vue Flow
  */
-export function buildEdgesFromVueFlowNodes(vueFlowNodes) {
+export function buildEdgesFromVueFlowNodes(vueFlowNodes: VueFlowNode[]): VueFlowEdge[] {
   if (!Array.isArray(vueFlowNodes)) {
     return []
   }
 
-  const edges = []
+  const edges: VueFlowEdge[] = []
 
   vueFlowNodes.forEach((node) => {
     // Extract parentId from Vue Flow node structure
     // Check originalData first (for nodes loaded from payload)
     // Then check data.parentId (for newly created nodes)
     const originalData = node.data?.originalData
-    const parentId = originalData?.parentId ?? node.data?.parentId ?? originalData?.parentId
+    const parentId = originalData?.parentId ?? node.data?.parentId
 
     // Skip root node (parentId === -1 or undefined/null)
     if (parentId === -1 || parentId === undefined || parentId === null) {
@@ -167,9 +168,9 @@ export function buildEdgesFromVueFlowNodes(vueFlowNodes) {
     const targetId = String(node.id)
 
     // Determine edge type based on node type
-    let edgeType = 'default'
-    let label = ''
-    let style = {}
+    let edgeType: string = 'default'
+    let label: string = ''
+    let style: { stroke?: string; strokeWidth?: number } = {}
 
     // Check node type from originalData or node.type
     const nodeType = originalData?.type ?? node.type
@@ -200,11 +201,9 @@ export function buildEdgesFromVueFlowNodes(vueFlowNodes) {
 
 /**
  * Map payload node type to Vue Flow node type
- * @param {string} payloadType - Node type from payload
- * @returns {string} Vue Flow node type
  */
-function mapNodeType(payloadType) {
-  const typeMap = {
+function mapNodeType(payloadType: PayloadNode['type']): string {
+  const typeMap: Record<PayloadNode['type'], string> = {
     trigger: 'trigger',
     sendMessage: 'sendMessage',
     addComment: 'addComment',
@@ -217,15 +216,13 @@ function mapNodeType(payloadType) {
 
 /**
  * Get node label/name
- * @param {Object} node - Node object
- * @returns {string} Node label
  */
-function getNodeLabel(node) {
+function getNodeLabel(node: PayloadNode): string {
   if (node.name) {
     return node.name
   }
 
-  const labelMap = {
+  const labelMap: Record<PayloadNode['type'], string> = {
     trigger: 'Trigger',
     sendMessage: 'Send Message',
     addComment: 'Add Comment',
@@ -238,30 +235,35 @@ function getNodeLabel(node) {
 
 /**
  * Get node description (truncated)
- * @param {Object} node - Node object
- * @param {number} maxLength - Maximum description length
- * @returns {string} Truncated description
  */
-export function getNodeDescription(node, maxLength = 50) {
-  if (!node.data) {
+export function getNodeDescription(
+  node: PayloadNode | VueFlowNode,
+  maxLength: number = 50
+): string {
+  const nodeData = 'data' in node ? node.data : node.data
+  if (!nodeData) {
     return ''
   }
 
   let description = ''
 
-  switch (node.type) {
+  const nodeType = 'originalData' in nodeData && nodeData.originalData
+    ? nodeData.originalData.type
+    : ('type' in node ? node.type : '')
+
+  switch (nodeType) {
     case 'sendMessage':
-      const textPayload = node.data.payload?.find((p) => p.type === 'text')
+      const textPayload = (nodeData as any).payload?.find((p: any) => p.type === 'text')
       description = textPayload?.text || ''
       break
     case 'addComment':
-      description = node.data.comment || ''
+      description = (nodeData as any).comment || ''
       break
     case 'dateTime':
-      description = `Business Hours - ${node.data.timezone || 'UTC'}`
+      description = `Business Hours - ${(nodeData as any).timezone || 'UTC'}`
       break
     case 'trigger':
-      description = node.data.type || ''
+      description = (nodeData as any).type || ''
       break
     default:
       description = ''
@@ -277,14 +279,12 @@ export function getNodeDescription(node, maxLength = 50) {
 
 /**
  * Create a new node with default structure
- * @param {Object} nodeData - Node creation data
- * @returns {Object} New node object
  */
-export function createNewNode(nodeData) {
+export function createNewNode(nodeData: NodeCreationData): PayloadNode {
   const { title, description, type, parentId } = nodeData
   const id = generateNodeId()
 
-  const baseNode = {
+  const baseNode: PayloadNode = {
     id,
     name: title,
     type: mapCreateTypeToPayloadType(type),
@@ -322,11 +322,11 @@ export function createNewNode(nodeData) {
 
 /**
  * Map create form type to payload type
- * @param {string} createType - Type from create form
- * @returns {string} Payload type
  */
-function mapCreateTypeToPayloadType(createType) {
-  const typeMap = {
+function mapCreateTypeToPayloadType(
+  createType: NodeCreationData['type']
+): PayloadNode['type'] {
+  const typeMap: Record<NodeCreationData['type'], PayloadNode['type']> = {
     sendMessage: 'sendMessage',
     addComment: 'addComment',
     businessHours: 'dateTime',
@@ -337,10 +337,8 @@ function mapCreateTypeToPayloadType(createType) {
 
 /**
  * Get default data structure for node type
- * @param {string} type - Node type
- * @returns {Object} Default data object
  */
-function getDefaultDataForType(type) {
+function getDefaultDataForType(type: NodeCreationData['type']): PayloadNode['data'] {
   switch (type) {
     case 'sendMessage':
       return { payload: [] }
@@ -360,9 +358,12 @@ function getDefaultDataForType(type) {
 
 /**
  * Get default business hours (all days 09:00-17:00)
- * @returns {Array} Default business hours array
  */
-function getDefaultBusinessHours() {
+function getDefaultBusinessHours(): Array<{
+  day: string
+  startTime: string
+  endTime: string
+}> {
   const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
   return days.map((day) => ({
     day,

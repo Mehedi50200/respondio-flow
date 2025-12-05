@@ -1,15 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
-import { useNodesStore } from '../stores/index.js'
+import { useNodesStore } from '../stores/index'
 import {
   transformPayloadToNodes,
   transformPayloadToEdges,
   buildEdgesFromVueFlowNodes,
   createNewNode,
-} from '../utils/nodeTransform.js'
+} from '../utils/nodeTransform'
+import type { NodeCreationData, NodeUpdateData, PayloadNode } from '@/types'
 
 /**
  * Fetch nodes from payload.json
- * @returns {Object} Query result object
  */
 export function useNodesQuery() {
   const store = useNodesStore()
@@ -20,19 +20,19 @@ export function useNodesQuery() {
       // Fetch payload.json
       // In Vite, we can import JSON directly or fetch from public folder
       // For now, we'll import it directly
-      const payloadData = await import('../../assets/payload.json').then(
-        (module) => module.default
-      )
+      const payloadData = (await import('../../assets/payload.json')) as {
+        default: PayloadNode[]
+      }
 
       // Transform to Vue Flow format
-      const nodes = transformPayloadToNodes(payloadData)
-      const edges = transformPayloadToEdges(payloadData)
+      const nodes = transformPayloadToNodes(payloadData.default)
+      const edges = transformPayloadToEdges(payloadData.default)
 
       // Update store
       store.setNodes(nodes)
       store.setEdges(edges)
 
-      return { nodes, edges, rawData: payloadData }
+      return { nodes, edges, rawData: payloadData.default }
     },
   })
 
@@ -41,24 +41,23 @@ export function useNodesQuery() {
 
 /**
  * Create a new node mutation
- * @returns {Object} Mutation object
  */
 export function useCreateNodeMutation() {
   const queryClient = useQueryClient()
   const store = useNodesStore()
 
   return useMutation({
-    mutationFn: async (nodeData) => {
+    mutationFn: async (nodeData: NodeCreationData) => {
       // In a real app, this would be an API call
       // Create new node in payload format
       const payloadNode = createNewNode(nodeData)
-      
+
       // Transform to Vue Flow format
       const vueFlowNode = transformPayloadToNodes([payloadNode])[0]
-      
+
       // Add to store
       const nodes = [...store.nodes, vueFlowNode]
-      
+
       // Rebuild edges from all Vue Flow nodes
       const edges = buildEdgesFromVueFlowNodes(nodes)
 
@@ -76,14 +75,13 @@ export function useCreateNodeMutation() {
 
 /**
  * Update an existing node mutation
- * @returns {Object} Mutation object
  */
 export function useUpdateNodeMutation() {
   const queryClient = useQueryClient()
   const store = useNodesStore()
 
   return useMutation({
-    mutationFn: async ({ nodeId, updates }) => {
+    mutationFn: async ({ nodeId, updates }: NodeUpdateData) => {
       // In a real app, this would be an API call
       store.updateNode(nodeId, updates)
 
@@ -102,22 +100,23 @@ export function useUpdateNodeMutation() {
 
 /**
  * Delete a node mutation
- * @returns {Object} Mutation object
  */
 export function useDeleteNodeMutation() {
   const queryClient = useQueryClient()
   const store = useNodesStore()
 
   return useMutation({
-    mutationFn: async (nodeId) => {
+    mutationFn: async (nodeId: string | number) => {
       // In a real app, this would be an API call
       store.deleteNode(nodeId)
 
       // Also delete child nodes recursively
-      const deleteChildren = (parentId) => {
+      const deleteChildren = (parentId: string | number) => {
         const children = store.nodes.filter((n) => {
           const originalData = n.data?.originalData
-          return originalData?.parentId === parentId || n.data?.parentId === parentId
+          return (
+            originalData?.parentId === parentId || n.data?.parentId === parentId
+          )
         })
 
         children.forEach((child) => {

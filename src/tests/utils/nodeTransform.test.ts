@@ -5,7 +5,8 @@ import {
   createNewNode,
   transformPayloadToNodes,
   transformPayloadToEdges,
-} from '../../utils/nodeTransform.js'
+} from '../../utils/nodeTransform'
+import type { PayloadNode } from '@/types'
 
 describe('nodeTransform utilities', () => {
   describe('generateNodeId', () => {
@@ -22,7 +23,9 @@ describe('nodeTransform utilities', () => {
 
   describe('getNodeDescription', () => {
     it('should return description for sendMessage node', () => {
-      const node = {
+      const node: PayloadNode = {
+        id: '1',
+        parentId: -1,
         type: 'sendMessage',
         data: {
           payload: [{ type: 'text', text: 'Hello world' }],
@@ -33,7 +36,9 @@ describe('nodeTransform utilities', () => {
     })
 
     it('should return description for addComment node', () => {
-      const node = {
+      const node: PayloadNode = {
+        id: '1',
+        parentId: -1,
         type: 'addComment',
         data: {
           comment: 'Test comment',
@@ -45,7 +50,9 @@ describe('nodeTransform utilities', () => {
 
     it('should truncate long descriptions', () => {
       const longText = 'a'.repeat(100)
-      const node = {
+      const node: PayloadNode = {
+        id: '1',
+        parentId: -1,
         type: 'sendMessage',
         data: {
           payload: [{ type: 'text', text: longText }],
@@ -63,7 +70,7 @@ describe('nodeTransform utilities', () => {
       const nodeData = {
         title: 'Test Message',
         description: 'Test description',
-        type: 'sendMessage',
+        type: 'sendMessage' as const,
       }
 
       const node = createNewNode(nodeData)
@@ -72,14 +79,14 @@ describe('nodeTransform utilities', () => {
       expect(node.name).toBe('Test Message')
       expect(node.type).toBe('sendMessage')
       expect(node.data.payload).toBeDefined()
-      expect(node.data.payload[0].text).toBe('Test description')
+      expect(node.data.payload?.[0]?.text).toBe('Test description')
     })
 
     it('should create an addComment node', () => {
       const nodeData = {
         title: 'Test Comment',
         description: 'Comment text',
-        type: 'addComment',
+        type: 'addComment' as const,
       }
 
       const node = createNewNode(nodeData)
@@ -92,21 +99,21 @@ describe('nodeTransform utilities', () => {
       const nodeData = {
         title: 'Business Hours',
         description: '',
-        type: 'businessHours',
+        type: 'businessHours' as const,
       }
 
       const node = createNewNode(nodeData)
 
       expect(node.type).toBe('dateTime')
       expect(node.data.times).toBeDefined()
-      expect(node.data.times.length).toBe(7) // 7 days
+      expect(node.data.times?.length).toBe(7) // 7 days
       expect(node.data.timezone).toBe('UTC')
     })
   })
 
   describe('transformPayloadToNodes', () => {
     it('should transform payload data to Vue Flow nodes', () => {
-      const payloadData = [
+      const payloadData: PayloadNode[] = [
         {
           id: 1,
           parentId: -1,
@@ -137,23 +144,25 @@ describe('nodeTransform utilities', () => {
     })
 
     it('should handle invalid input', () => {
-      const nodes = transformPayloadToNodes(null)
+      const nodes = transformPayloadToNodes(null as any)
       expect(nodes).toEqual([])
     })
   })
 
   describe('transformPayloadToEdges', () => {
     it('should transform payload data to Vue Flow edges', () => {
-      const payloadData = [
+      const payloadData: PayloadNode[] = [
         {
           id: 1,
           parentId: -1,
           type: 'trigger',
+          data: {},
         },
         {
           id: 'test-1',
           parentId: 1,
           type: 'sendMessage',
+          data: {},
         },
       ]
 
@@ -166,11 +175,12 @@ describe('nodeTransform utilities', () => {
     })
 
     it('should create styled edges for connectors', () => {
-      const payloadData = [
+      const payloadData: PayloadNode[] = [
         {
           id: 'parent',
           parentId: -1,
           type: 'dateTime',
+          data: {},
         },
         {
           id: 'success',
@@ -183,7 +193,7 @@ describe('nodeTransform utilities', () => {
       const edges = transformPayloadToEdges(payloadData)
 
       expect(edges[0].label).toBe('Success')
-      expect(edges[0].style.stroke).toBe('#10b981')
+      expect(edges[0].style?.stroke).toBe('#10b981')
       expect(edges[0].animated).toBe(true)
     })
 

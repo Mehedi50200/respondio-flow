@@ -1,7 +1,14 @@
 import { defineStore } from 'pinia'
+import type { VueFlowNode, VueFlowEdge } from '@/types'
+
+interface NodesState {
+  nodes: VueFlowNode[]
+  edges: VueFlowEdge[]
+  selectedNodeId: string | number | null
+}
 
 export const useNodesStore = defineStore('nodes', {
-  state: () => ({
+  state: (): NodesState => ({
     nodes: [],
     edges: [],
     selectedNodeId: null,
@@ -10,19 +17,15 @@ export const useNodesStore = defineStore('nodes', {
   getters: {
     /**
      * Get node by ID
-     * @param {string|number} nodeId - Node ID
-     * @returns {Object|null} Node object or null
      */
-    getNodeById: (state) => (nodeId) => {
+    getNodeById: (state) => (nodeId: string | number): VueFlowNode | null => {
       return state.nodes.find((n) => String(n.id) === String(nodeId)) || null
     },
 
     /**
      * Get children nodes for a parent
-     * @param {string|number} parentId - Parent node ID
-     * @returns {Array} Array of child nodes
      */
-    getChildrenNodes: (state) => (parentId) => {
+    getChildrenNodes: (state) => (parentId: string | number): VueFlowNode[] => {
       return state.nodes.filter((n) => {
         const originalData = n.data?.originalData
         const nodeParentId = originalData?.parentId ?? n.data?.parentId
@@ -32,9 +35,8 @@ export const useNodesStore = defineStore('nodes', {
 
     /**
      * Get selected node
-     * @returns {Object|null} Selected node or null
      */
-    selectedNode: (state) => {
+    selectedNode: (state): VueFlowNode | null => {
       if (!state.selectedNodeId) return null
       return state.nodes.find((n) => String(n.id) === String(state.selectedNodeId)) || null
     },
@@ -43,34 +45,29 @@ export const useNodesStore = defineStore('nodes', {
   actions: {
     /**
      * Set nodes array
-     * @param {Array} nodes - Array of nodes
      */
-    setNodes(nodes) {
+    setNodes(nodes: VueFlowNode[]): void {
       this.nodes = nodes
     },
 
     /**
      * Set edges array
-     * @param {Array} edges - Array of edges
      */
-    setEdges(edges) {
+    setEdges(edges: VueFlowEdge[]): void {
       this.edges = edges
     },
 
     /**
      * Add a new node
-     * @param {Object} node - Node object
      */
-    addNode(node) {
+    addNode(node: VueFlowNode): void {
       this.nodes.push(node)
     },
 
     /**
      * Update node by ID
-     * @param {string|number} nodeId - Node ID
-     * @param {Object} updates - Updates to apply
      */
-    updateNode(nodeId, updates) {
+    updateNode(nodeId: string | number, updates: Partial<VueFlowNode>): void {
       const index = this.nodes.findIndex((n) => String(n.id) === String(nodeId))
       if (index !== -1) {
         // Deep merge updates
@@ -87,17 +84,16 @@ export const useNodesStore = defineStore('nodes', {
         if (this.nodes[index].data.originalData) {
           this.nodes[index].data.originalData = {
             ...this.nodes[index].data.originalData,
-            ...updates.data,
-          }
+            ...(updates.data || {}),
+          } as any
         }
       }
     },
 
     /**
      * Delete node by ID
-     * @param {string|number} nodeId - Node ID to delete
      */
-    deleteNode(nodeId) {
+    deleteNode(nodeId: string | number): void {
       this.nodes = this.nodes.filter((n) => String(n.id) !== String(nodeId))
       this.edges = this.edges.filter(
         (e) => String(e.source) !== String(nodeId) && String(e.target) !== String(nodeId)
@@ -111,10 +107,8 @@ export const useNodesStore = defineStore('nodes', {
 
     /**
      * Update node position
-     * @param {string|number} nodeId - Node ID
-     * @param {Object} position - Position object with x and y
      */
-    updateNodePosition(nodeId, position) {
+    updateNodePosition(nodeId: string | number, position: Partial<{ x: number; y: number }>): void {
       const index = this.nodes.findIndex((n) => String(n.id) === String(nodeId))
       if (index !== -1) {
         this.nodes[index].position = { ...this.nodes[index].position, ...position }
@@ -123,16 +117,15 @@ export const useNodesStore = defineStore('nodes', {
 
     /**
      * Set selected node ID
-     * @param {string|number|null} nodeId - Node ID to select
      */
-    setSelectedNode(nodeId) {
+    setSelectedNode(nodeId: string | number | null): void {
       this.selectedNodeId = nodeId
     },
 
     /**
      * Clear selected node
      */
-    clearSelectedNode() {
+    clearSelectedNode(): void {
       this.selectedNodeId = null
     },
   },
