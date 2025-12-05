@@ -21,12 +21,14 @@
       <div class="node-title">{{ data.label || 'Add Comment' }}</div>
       <div class="node-description">{{ truncatedDescription }}</div>
     </div>
+    <NodeAddButton @click="handleAddClick" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
 import type { NodeProps } from '@vue-flow/core'
+import NodeAddButton from '../NodeAddButton.vue'
 
 interface AddCommentNodeData {
   label?: string
@@ -36,6 +38,14 @@ interface AddCommentNodeData {
 
 const props = defineProps<NodeProps<AddCommentNodeData>>()
 
+const addNodeHandler = inject<(nodeId: string) => void>('addNodeHandler')
+
+const handleAddClick = () => {
+  if (addNodeHandler) {
+    addNodeHandler(props.id)
+  }
+}
+
 const truncatedDescription = computed(() => {
   const comment = props.data.comment || props.data.description || ''
   return comment.length > 50 ? comment.substring(0, 50) + '...' : comment || 'No comment'
@@ -44,6 +54,7 @@ const truncatedDescription = computed(() => {
 
 <style scoped>
 .add-comment-node {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;

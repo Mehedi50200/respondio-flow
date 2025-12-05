@@ -1,22 +1,26 @@
 <template>
   <div class="flow-canvas-container">
-    <VueFlow
-      v-model:nodes="nodes"
-      v-model:edges="edges"
-      :node-types="nodeTypes"
-      :fit-view-on-init="true"
-      :min-zoom="0.2"
-      :max-zoom="2"
-      @nodes-change="onNodesChange"
-      @node-click="onNodeClick"
-    >
-      <Background pattern-color="#e5e7eb" :gap="16" />
-      <Controls />
-    </VueFlow>
-    
-    <div class="canvas-actions">
-      <CreateNodeButton @click="openCreateModal" />
+    <div class="canvas-wrapper">
+      <VueFlow
+        v-model:nodes="nodes"
+        v-model:edges="edges"
+        :node-types="nodeTypes"
+        :fit-view-on-init="true"
+        :min-zoom="0.2"
+        :max-zoom="2"
+        @nodes-change="onNodesChange"
+        @node-click="onNodeClick"
+      >
+        <Background pattern-color="#e5e7eb" :gap="16" />
+        <Controls />
+      </VueFlow>
     </div>
+    
+    <NodeDetailsDrawer
+      :is-open="isDrawerOpen"
+      :node-id="selectedNodeId"
+      @close="closeDrawer"
+    />
     
     <CreateNodeModal
       :is-open="isCreateModalOpen"
@@ -28,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch, ref } from 'vue'
+import { computed, watch, ref, provide } from 'vue'
 import { VueFlow, type NodeChange } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { Controls } from '@vue-flow/controls'
@@ -45,25 +49,40 @@ import BusinessHoursNode from './nodes/BusinessHoursNode.vue'
 import DateTimeConnectorNode from './nodes/DateTimeConnectorNode.vue'
 
 // Import create node components
-import CreateNodeButton from './CreateNodeButton.vue'
 import CreateNodeModal from './CreateNodeModal.vue'
+import NodeDetailsDrawer from './NodeDetailsDrawer.vue'
 
 const router = useRouter()
 const store = useNodesStore()
 
 const isCreateModalOpen = ref(false)
 const selectedParentId = ref<string | number | null>(null)
+const isDrawerOpen = computed(() => !!router.currentRoute.value.params.id)
+const selectedNodeId = computed(() => router.currentRoute.value.params.id as string | undefined)
+
+// Provide add-node handler to all nodes
+const handleAddNode = (nodeId: string) => {
+  selectedParentId.value = nodeId
+  isCreateModalOpen.value = true
+}
+provide('addNodeHandler', handleAddNode)
 
 // Fetch nodes data (triggers query and updates store)
 useNodesQuery()
 
-// Register custom node types
+// Register custom node types with add-node handler
 const nodeTypes = {
   trigger: TriggerNode,
   sendMessage: SendMessageNode,
   addComment: AddCommentNode,
   businessHours: BusinessHoursNode,
   dateTimeConnector: DateTimeConnectorNode,
+}
+
+// Handle add-node events from nodes
+const handleAddNode = (nodeId: string) => {
+  selectedParentId.value = nodeId
+  isCreateModalOpen.value = true
 }
 
 // Computed nodes and edges from store
@@ -99,6 +118,11 @@ const onNodeClick = (event: { node: VueFlowNode }) => {
   router.push(`/node/${node.id}`)
 }
 
+// Close drawer
+const closeDrawer = () => {
+  router.push('/')
+}
+
 // Watch for route changes to handle drawer opening
 watch(
   () => router.currentRoute.value.params.id,
@@ -113,9 +137,8 @@ watch(
 )
 
 // Create node modal handlers
-const openCreateModal = () => {
-  // Get currently selected node as parent (if any)
-  selectedParentId.value = store.selectedNodeId
+const openCreateModal = (parentId?: string | number | null) => {
+  selectedParentId.value = parentId || store.selectedNodeId
   isCreateModalOpen.value = true
 }
 
@@ -140,12 +163,11 @@ const handleNodeCreated = () => {
   height: 100vh;
   background: #f9fafb;
   position: relative;
+  display: flex;
 }
 
-.canvas-actions {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  z-index: 10;
+.canvas-wrapper {
+  flex: 1;
+  position: relative;
 }
 </style>

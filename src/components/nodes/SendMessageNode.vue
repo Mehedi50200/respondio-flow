@@ -15,12 +15,14 @@
       <div class="node-title">{{ data.label || 'Send Message' }}</div>
       <div class="node-description">{{ truncatedDescription }}</div>
     </div>
+    <NodeAddButton @click="handleAddClick" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
 import type { NodeProps } from '@vue-flow/core'
+import NodeAddButton from '../NodeAddButton.vue'
 
 interface SendMessageNodeData {
   label?: string
@@ -29,6 +31,14 @@ interface SendMessageNodeData {
 }
 
 const props = defineProps<NodeProps<SendMessageNodeData>>()
+
+const addNodeHandler = inject<(nodeId: string) => void>('addNodeHandler')
+
+const handleAddClick = () => {
+  if (addNodeHandler) {
+    addNodeHandler(props.id)
+  }
+}
 
 const truncatedDescription = computed(() => {
   if (props.data.description) {
@@ -51,6 +61,7 @@ const truncatedDescription = computed(() => {
 
 <style scoped>
 .send-message-node {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;

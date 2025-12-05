@@ -10,12 +10,14 @@
       <div class="node-title">{{ data.label || 'Business Hours' }}</div>
       <div class="node-description">{{ data.description || `Business Hours - ${timezone}` }}</div>
     </div>
+    <NodeAddButton @click="handleAddClick" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
 import type { NodeProps } from '@vue-flow/core'
+import NodeAddButton from '../NodeAddButton.vue'
 
 interface BusinessHoursNodeData {
   label?: string
@@ -26,11 +28,20 @@ interface BusinessHoursNodeData {
 
 const props = defineProps<NodeProps<BusinessHoursNodeData>>()
 
+const addNodeHandler = inject<(nodeId: string) => void>('addNodeHandler')
+
+const handleAddClick = () => {
+  if (addNodeHandler) {
+    addNodeHandler(props.id)
+  }
+}
+
 const timezone = computed(() => props.data.timezone || 'UTC')
 </script>
 
 <style scoped>
 .business-hours-node {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;

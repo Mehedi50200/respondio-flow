@@ -10,11 +10,14 @@
       <div class="node-title">{{ data.label || 'Trigger' }}</div>
       <div class="node-description">{{ data.description || 'Conversation Opened' }}</div>
     </div>
+    <NodeAddButton @click="handleAddClick" />
   </div>
 </template>
 
 <script setup lang="ts">
+import { inject } from 'vue'
 import type { NodeProps } from '@vue-flow/core'
+import NodeAddButton from '../NodeAddButton.vue'
 
 interface TriggerNodeData {
   label?: string
@@ -22,10 +25,19 @@ interface TriggerNodeData {
 }
 
 const props = defineProps<NodeProps<TriggerNodeData>>()
+
+const addNodeHandler = inject<(nodeId: string) => void>('addNodeHandler')
+
+const handleAddClick = () => {
+  if (addNodeHandler) {
+    addNodeHandler(props.id)
+  }
+}
 </script>
 
 <style scoped>
 .trigger-node {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
