@@ -32,9 +32,36 @@ respondio-flow/
 └── README.md
 ```
 
+## Prerequisites
+
+- **Node.js**: Version 18.20.8 or higher (Node 18+ required)
+- **npm**: Version 10.8.2 or higher
+- **nvm**: Recommended for Node.js version management
+
+### Node.js Version Management
+
+This project includes an `.nvmrc` file for consistent Node.js version management.
+
+**If you have nvm installed:**
+```bash
+# Automatically switch to the correct Node.js version
+nvm use
+
+# Or install the version if not already installed
+nvm install
+```
+
+**Without nvm:**
+Make sure you have Node.js 18.20.8 or higher installed. You can download it from [nodejs.org](https://nodejs.org/).
+
 ## Setup Instructions
 
-1. **Install dependencies:**
+1. **Switch to correct Node.js version (if using nvm):**
+   ```bash
+   nvm use
+   ```
+
+2. **Install dependencies:**
    ```bash
    npm install
    ```
