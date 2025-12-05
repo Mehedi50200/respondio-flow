@@ -25,68 +25,45 @@
             Allows a branch to be created based on date & time conditions. Use it to set business hours or date range conditions.
           </p>
 
-          <div class="tabs">
-            <button
-              class="tab-button"
-              :class="{ active: activeTab === 'day' }"
-              @click="activeTab = 'day'"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2" />
-                <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" />
-              </svg>
-              Day
-            </button>
-            <button
-              class="tab-button"
-              :class="{ active: activeTab === 'time' }"
-              @click="activeTab = 'time'"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-              </svg>
-              Time
-            </button>
-          </div>
-
-          <div v-if="activeTab === 'day'" class="tab-content">
-            <div class="business-hours-grid">
-              <div v-for="day in daysOfWeek" :key="day.key" class="day-row">
-                <div class="day-label">{{ day.label }}</div>
-                <div class="time-inputs">
-                  <input
-                    v-model="businessHours[day.key].startTime"
-                    type="time"
-                    class="time-input"
-                    @change="updateBusinessHours"
-                  />
-                  <span class="time-separator">to</span>
-                  <input
-                    v-model="businessHours[day.key].endTime"
-                    type="time"
-                    class="time-input"
-                    @change="updateBusinessHours"
-                  />
+          <div class="business-hours-table">
+            <div class="table-header">
+              <div class="header-cell">Day</div>
+              <div class="header-cell">Time</div>
+            </div>
+            <div class="table-body">
+              <div v-for="day in daysOfWeek" :key="day.key" class="table-row">
+                <div class="cell day-cell">{{ day.label }}</div>
+                <div class="cell time-cell">
+                  <div class="time-inputs">
+                    <input
+                      v-model="businessHours[day.key].startTime"
+                      type="time"
+                      class="time-input"
+                      @change="updateBusinessHours"
+                    />
+                    <span class="time-separator">to</span>
+                    <input
+                      v-model="businessHours[day.key].endTime"
+                      type="time"
+                      class="time-input"
+                      @change="updateBusinessHours"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-
-            <div class="timezone-selector">
-              <label>Time Zone</label>
-              <select v-model="timezone" @change="updateTimezone" class="timezone-select">
-                <option value="UTC">(GMT+00:00) UTC</option>
-                <option value="America/New_York">(GMT-05:00) America/New_York</option>
-                <option value="America/Los_Angeles">(GMT-08:00) America/Los_Angeles</option>
-                <option value="Europe/London">(GMT+00:00) Europe/London</option>
-                <option value="Asia/Tokyo">(GMT+09:00) Asia/Tokyo</option>
-                <option value="Asia/Dubai">(GMT+04:00) Asia/Dubai</option>
-              </select>
-            </div>
           </div>
 
-          <div v-if="activeTab === 'time'" class="tab-content">
-            <p>Time-based conditions configuration coming soon...</p>
+          <div class="timezone-selector">
+            <label>Time Zone</label>
+            <select v-model="timezone" @change="updateTimezone" class="timezone-select">
+              <option value="UTC">(GMT+00:00) UTC</option>
+              <option value="America/New_York">(GMT-05:00) America/New_York</option>
+              <option value="America/Los_Angeles">(GMT-08:00) America/Los_Angeles</option>
+              <option value="Europe/London">(GMT+00:00) Europe/London</option>
+              <option value="Asia/Tokyo">(GMT+09:00) Asia/Tokyo</option>
+              <option value="Asia/Dubai">(GMT+04:00) Asia/Dubai</option>
+            </select>
           </div>
         </div>
 
@@ -153,7 +130,6 @@ const emit = defineEmits<{
 const store = useNodesStore()
 const updateNodeMutation = useUpdateNodeMutation()
 
-const activeTab = ref<'day' | 'time'>('day')
 const businessHours = ref<Record<string, { startTime: string; endTime: string }>>({})
 const timezone = ref('UTC')
 const messageText = ref('')
@@ -443,65 +419,57 @@ watch(
   line-height: 1.5;
 }
 
-.tabs {
-  display: flex;
-  gap: 8px;
+.business-hours-table {
   margin-bottom: 24px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  background: #f9fafb;
   border-bottom: 1px solid #e5e7eb;
 }
 
-.tab-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.header-cell {
   padding: 12px 16px;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
-  color: #6b7280;
-  transition: all 0.2s;
+  font-weight: 600;
+  color: #374151;
+  text-align: left;
 }
 
-.tab-button:hover {
-  color: #111827;
-}
-
-.tab-button.active {
-  color: #3b82f6;
-  border-bottom-color: #3b82f6;
-}
-
-.tab-button svg {
-  width: 16px;
-  height: 16px;
-}
-
-.tab-content {
-  margin-top: 24px;
-}
-
-.business-hours-grid {
+.table-body {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
 }
 
-.day-row {
+.table-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.cell {
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #374151;
   display: flex;
   align-items: center;
-  gap: 16px;
 }
 
-.day-label {
-  width: 140px;
-  font-size: 14px;
+.day-cell {
   font-weight: 500;
-  color: #374151;
-  flex-shrink: 0;
+}
+
+.time-cell {
+  justify-content: flex-start;
 }
 
 .time-inputs {
