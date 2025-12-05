@@ -3,18 +3,23 @@
     <div class="node-icon">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
-          d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+          d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+        />
+        <polyline
+          points="14 2 14 8 20 8"
           stroke="currentColor"
           stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
         />
-        <path
-          d="M13 8H7M17 12H7"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        />
+        <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        <polyline points="10 9 9 9 8 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
     </div>
     <div class="node-content">
@@ -56,21 +61,29 @@ const truncatedDescription = computed(() => {
 .add-comment-node {
   position: relative;
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  flex-direction: column;
+  padding: 16px;
   background: #3b82f6;
   color: white;
   border-radius: 8px;
-  min-width: 200px;
+  width: 240px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .node-icon {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  margin-bottom: 12px;
+  width: 24px;
+  height: 24px;
+}
+
+.node-icon svg {
+  width: 100%;
+  height: 100%;
 }
 
 .node-content {
@@ -80,19 +93,18 @@ const truncatedDescription = computed(() => {
 
 .node-title {
   font-weight: 600;
-  font-size: 14px;
-  margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 15px;
+  margin-bottom: 6px;
+  line-height: 1.3;
+  word-wrap: break-word;
+  letter-spacing: -0.01em;
 }
 
 .node-description {
-  font-size: 12px;
-  opacity: 0.9;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 13px;
+  opacity: 0.85;
+  line-height: 1.4;
+  word-wrap: break-word;
 }
 </style>
 

@@ -71,12 +71,12 @@ provide('addNodeHandler', handleAddNode)
 useNodesQuery()
 
 // Register custom node types
+// Note: dateTimeConnector nodes are not rendered - they only exist as edge labels
 const nodeTypes = {
   trigger: TriggerNode,
   sendMessage: SendMessageNode,
   addComment: AddCommentNode,
   businessHours: BusinessHoursNode,
-  dateTimeConnector: DateTimeConnectorNode,
 }
 
 // Computed nodes and edges from store

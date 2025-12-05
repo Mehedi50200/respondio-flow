@@ -2,8 +2,11 @@
   <div class="business-hours-node">
     <div class="node-icon">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-        <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2" />
+        <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
       </svg>
     </div>
     <div class="node-content">
@@ -43,21 +46,29 @@ const timezone = computed(() => props.data.timezone || 'UTC')
 .business-hours-node {
   position: relative;
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  flex-direction: column;
+  padding: 16px;
   background: #f59e0b;
   color: white;
   border-radius: 8px;
-  min-width: 200px;
+  width: 240px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .node-icon {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  margin-bottom: 12px;
+  width: 24px;
+  height: 24px;
+}
+
+.node-icon svg {
+  width: 100%;
+  height: 100%;
 }
 
 .node-content {
@@ -67,19 +78,18 @@ const timezone = computed(() => props.data.timezone || 'UTC')
 
 .node-title {
   font-weight: 600;
-  font-size: 14px;
-  margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 15px;
+  margin-bottom: 6px;
+  line-height: 1.3;
+  word-wrap: break-word;
+  letter-spacing: -0.01em;
 }
 
 .node-description {
-  font-size: 12px;
-  opacity: 0.9;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 13px;
+  opacity: 0.85;
+  line-height: 1.4;
+  word-wrap: break-word;
 }
 </style>
 

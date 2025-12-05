@@ -2,8 +2,14 @@
   <div class="trigger-node">
     <div class="node-icon">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-        <path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        <path
+          d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="currentColor"
+        />
       </svg>
     </div>
     <div class="node-content">
@@ -39,21 +45,29 @@ const handleAddClick = () => {
 .trigger-node {
   position: relative;
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  flex-direction: column;
+  padding: 16px;
   background: #8b5cf6;
   color: white;
   border-radius: 8px;
-  min-width: 200px;
+  width: 240px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .node-icon {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  margin-bottom: 12px;
+  width: 24px;
+  height: 24px;
+}
+
+.node-icon svg {
+  width: 100%;
+  height: 100%;
 }
 
 .node-content {
@@ -63,19 +77,18 @@ const handleAddClick = () => {
 
 .node-title {
   font-weight: 600;
-  font-size: 14px;
-  margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 15px;
+  margin-bottom: 6px;
+  line-height: 1.3;
+  word-wrap: break-word;
+  letter-spacing: -0.01em;
 }
 
 .node-description {
-  font-size: 12px;
-  opacity: 0.9;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 13px;
+  opacity: 0.85;
+  line-height: 1.4;
+  word-wrap: break-word;
 }
 </style>
 
