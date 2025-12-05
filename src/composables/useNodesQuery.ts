@@ -90,10 +90,8 @@ export function useCreateNodeMutation() {
 
       return vueFlowNode
     },
-    onSuccess: () => {
-      // Invalidate and refetch nodes query
-      queryClient.invalidateQueries({ queryKey: ['nodes'] })
-    },
+    // Don't invalidate query - we're updating the store directly
+    // In a real app with API, we would invalidate here
   })
 }
 
@@ -130,9 +128,7 @@ export function useUpdateNodeMutation() {
 
       return { nodeId, updates }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['nodes'] })
-    },
+    // Don't invalidate query - we're updating the store directly
   })
 }
 
@@ -175,9 +171,7 @@ export function useDeleteNodeMutation() {
 
       return nodeId
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['nodes'] })
-    },
+    // Don't invalidate query - we're updating the store directly
   })
 }
 

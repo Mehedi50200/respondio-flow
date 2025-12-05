@@ -240,30 +240,43 @@ export function getNodeDescription(
   node: PayloadNode | VueFlowNode,
   maxLength: number = 50
 ): string {
-  const nodeData = 'data' in node ? node.data : node.data
+  // Check if it's a PayloadNode or VueFlowNode
+  const isPayloadNode = 'parentId' in node && !('position' in node)
+  
+  let nodeData: any
+  let nodeType: string
+  
+  if (isPayloadNode) {
+    // It's a PayloadNode
+    nodeData = (node as PayloadNode).data
+    nodeType = (node as PayloadNode).type
+  } else {
+    // It's a VueFlowNode
+    nodeData = (node as VueFlowNode).data
+    // Try to get type from originalData first, then from node type
+    const originalData = nodeData?.originalData
+    nodeType = originalData?.type || (node as VueFlowNode).type
+  }
+  
   if (!nodeData) {
     return ''
   }
 
   let description = ''
 
-  const nodeType = 'originalData' in nodeData && nodeData.originalData
-    ? nodeData.originalData.type
-    : ('type' in node ? node.type : '')
-
   switch (nodeType) {
     case 'sendMessage':
-      const textPayload = (nodeData as any).payload?.find((p: any) => p.type === 'text')
+      const textPayload = nodeData.payload?.find((p: any) => p.type === 'text')
       description = textPayload?.text || ''
       break
     case 'addComment':
-      description = (nodeData as any).comment || ''
+      description = nodeData.comment || ''
       break
     case 'dateTime':
-      description = `Business Hours - ${(nodeData as any).timezone || 'UTC'}`
+      description = `Business Hours - ${nodeData.timezone || 'UTC'}`
       break
     case 'trigger':
-      description = (nodeData as any).type || ''
+      description = nodeData.type || ''
       break
     default:
       description = ''
