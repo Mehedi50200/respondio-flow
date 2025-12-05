@@ -52,8 +52,32 @@ export function useCreateNodeMutation() {
       // Create new node in payload format
       const payloadNode = createNewNode(nodeData)
 
-      // Transform to Vue Flow format
-      const vueFlowNode = transformPayloadToNodes([payloadNode])[0]
+      // Calculate position for the new node
+      // We need to convert existing Vue Flow nodes back to payload format for position calculation
+      const existingPayloadNodes: PayloadNode[] = store.nodes.map((node) => {
+        const originalData = node.data?.originalData
+        if (originalData) {
+          return originalData
+        }
+        // Reconstruct payload node from Vue Flow node
+        return {
+          id: node.id,
+          parentId: node.data?.parentId ?? -1,
+          type: mapVueFlowTypeToPayloadType(node.type),
+          name: node.data?.label,
+          data: { ...node.data },
+        } as PayloadNode
+      })
+
+      // Add the new node to calculate its position
+      const allPayloadNodes = [...existingPayloadNodes, payloadNode]
+      const vueFlowNodes = transformPayloadToNodes(allPayloadNodes)
+      
+      // Find the newly created node
+      const vueFlowNode = vueFlowNodes.find((n) => String(n.id) === String(payloadNode.id))
+      if (!vueFlowNode) {
+        throw new Error('Failed to create node')
+      }
 
       // Add to store
       const nodes = [...store.nodes, vueFlowNode]
@@ -71,6 +95,20 @@ export function useCreateNodeMutation() {
       queryClient.invalidateQueries({ queryKey: ['nodes'] })
     },
   })
+}
+
+/**
+ * Map Vue Flow node type back to payload type
+ */
+function mapVueFlowTypeToPayloadType(vueFlowType: string): PayloadNode['type'] {
+  const typeMap: Record<string, PayloadNode['type']> = {
+    trigger: 'trigger',
+    sendMessage: 'sendMessage',
+    addComment: 'addComment',
+    businessHours: 'dateTime',
+    dateTimeConnector: 'dateTimeConnector',
+  }
+  return typeMap[vueFlowType] || 'sendMessage'
 }
 
 /**

@@ -13,11 +13,22 @@
       <Background pattern-color="#e5e7eb" :gap="16" />
       <Controls />
     </VueFlow>
+    
+    <div class="canvas-actions">
+      <CreateNodeButton @click="openCreateModal" />
+    </div>
+    
+    <CreateNodeModal
+      :is-open="isCreateModalOpen"
+      :selected-parent-id="selectedParentId"
+      @close="closeCreateModal"
+      @created="handleNodeCreated"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, watch, ref } from 'vue'
 import { VueFlow, type NodeChange } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { Controls } from '@vue-flow/controls'
@@ -33,8 +44,15 @@ import AddCommentNode from './nodes/AddCommentNode.vue'
 import BusinessHoursNode from './nodes/BusinessHoursNode.vue'
 import DateTimeConnectorNode from './nodes/DateTimeConnectorNode.vue'
 
+// Import create node components
+import CreateNodeButton from './CreateNodeButton.vue'
+import CreateNodeModal from './CreateNodeModal.vue'
+
 const router = useRouter()
 const store = useNodesStore()
+
+const isCreateModalOpen = ref(false)
+const selectedParentId = ref<string | number | null>(null)
 
 // Fetch nodes data (triggers query and updates store)
 useNodesQuery()
@@ -93,6 +111,24 @@ watch(
   },
   { immediate: true }
 )
+
+// Create node modal handlers
+const openCreateModal = () => {
+  // Get currently selected node as parent (if any)
+  selectedParentId.value = store.selectedNodeId
+  isCreateModalOpen.value = true
+}
+
+const closeCreateModal = () => {
+  isCreateModalOpen.value = false
+  selectedParentId.value = null
+}
+
+const handleNodeCreated = () => {
+  // Node was created successfully
+  // The mutation already updates the store, so nodes will refresh automatically
+  closeCreateModal()
+}
 </script>
 
 <style>
@@ -103,5 +139,13 @@ watch(
   width: 100%;
   height: 100vh;
   background: #f9fafb;
+  position: relative;
+}
+
+.canvas-actions {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
 }
 </style>
