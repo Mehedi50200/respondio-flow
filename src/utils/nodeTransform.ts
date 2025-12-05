@@ -37,8 +37,8 @@ export function calculateNodePosition(
     return { x: baseX, y: baseY }
   }
 
-  // Find parent node
-  const parent = allNodes.find((n) => n.id === node.parentId)
+  // Find parent node (use type-safe comparison)
+  const parent = allNodes.find((n) => String(n.id) === String(node.parentId))
   if (!parent) {
     return { x: baseX, y: baseY + verticalSpacing * (index + 1) }
   }

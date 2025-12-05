@@ -114,8 +114,12 @@ export function useDeleteNodeMutation() {
       const deleteChildren = (parentId: string | number) => {
         const children = store.nodes.filter((n) => {
           const originalData = n.data?.originalData
+          const originalParentId = originalData?.parentId
+          const dataParentId = n.data?.parentId
+          // Use type-safe comparison for mixed ID types
           return (
-            originalData?.parentId === parentId || n.data?.parentId === parentId
+            (originalParentId !== undefined && String(originalParentId) === String(parentId)) ||
+            (dataParentId !== undefined && String(dataParentId) === String(parentId))
           )
         })
 
