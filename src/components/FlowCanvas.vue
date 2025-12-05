@@ -70,19 +70,13 @@ provide('addNodeHandler', handleAddNode)
 // Fetch nodes data (triggers query and updates store)
 useNodesQuery()
 
-// Register custom node types with add-node handler
+// Register custom node types
 const nodeTypes = {
   trigger: TriggerNode,
   sendMessage: SendMessageNode,
   addComment: AddCommentNode,
   businessHours: BusinessHoursNode,
   dateTimeConnector: DateTimeConnectorNode,
-}
-
-// Handle add-node events from nodes
-const handleAddNode = (nodeId: string) => {
-  selectedParentId.value = nodeId
-  isCreateModalOpen.value = true
 }
 
 // Computed nodes and edges from store
