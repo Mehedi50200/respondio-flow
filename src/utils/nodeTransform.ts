@@ -311,7 +311,7 @@ export function createNewNode(nodeData: NodeCreationData): PayloadNode {
       baseNode.data = {
         times: getDefaultBusinessHours(),
         connectors: [],
-        timezone: 'UTC',
+        timezone: (nodeData as any).timezone || 'UTC',
         action: 'businessHours',
       }
       break

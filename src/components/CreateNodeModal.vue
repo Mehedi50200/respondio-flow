@@ -161,6 +161,11 @@ const handleSubmit = async () => {
       parentId: props.selectedParentId || undefined,
     }
 
+    // Add timezone for business hours nodes
+    if (formData.value.type === 'businessHours') {
+      ;(nodeData as any).timezone = formData.value.timezone
+    }
+
     await createNodeMutation.mutateAsync(nodeData)
     
     resetForm()
