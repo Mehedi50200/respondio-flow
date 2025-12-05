@@ -57,12 +57,7 @@ export function calculateNodePosition(
     }
   }
 
-  // Get all siblings (nodes with same parent)
-  const siblings = allNodes.filter(
-    (n) => String(n.parentId) === String(node.parentId) && String(n.id) !== String(node.id)
-  )
-
-  // Sort siblings by their order in the array
+  // Get sibling index (position among nodes with same parent)
   const siblingIndex = allNodes
     .filter((n) => String(n.parentId) === String(node.parentId))
     .findIndex((n) => String(n.id) === String(node.id))
