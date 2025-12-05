@@ -27,7 +27,6 @@ respondio-flow/
 │   ├── App.vue               # Root component
 │   ├── main.js               # Application entry point
 │   └── style.css             # Global styles
-├── docs/                     # Documentation (not pushed to git)
 ├── package.json
 ├── vite.config.js
 └── README.md
