@@ -124,13 +124,22 @@ describe('nodeTransform utilities', () => {
           type: 'dateTimeConnector',
           data: { connectorType: 'success' },
         },
+        {
+          id: 'child',
+          parentId: 'success',
+          type: 'sendMessage',
+          data: {},
+        },
       ]
 
       const edges = transformPayloadToEdges(payloadData)
 
+      expect(edges).toHaveLength(1)
       expect(edges[0].label).toBe('Success')
       expect(edges[0].style?.stroke).toBe('#10b981')
       expect(edges[0].animated).toBe(true)
+      expect(edges[0].source).toBe('parent')
+      expect(edges[0].target).toBe('child')
     })
 
   })

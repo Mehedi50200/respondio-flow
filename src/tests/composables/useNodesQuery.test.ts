@@ -1,10 +1,12 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
+import { mount } from '@vue/test-utils'
+import { defineComponent } from 'vue'
+import { createPinia, setActivePinia } from 'pinia'
+import { VueQueryPlugin, QueryClient } from '@tanstack/vue-query'
 import { useNodesQuery, useCreateNodeMutation, useUpdateNodeMutation, useDeleteNodeMutation } from '../../composables/useNodesQuery'
 import { useNodesStore } from '../../stores/index'
 import type { NodeCreationData } from '@/types'
 
-// Mock the payload.json import
 vi.mock('../../mock/payload.json', () => ({
   default: [
     {
@@ -22,25 +24,61 @@ vi.mock('../../mock/payload.json', () => ({
   ],
 }))
 
+function createWrapper(composable: () => any, piniaInstance?: ReturnType<typeof createPinia>) {
+  const pinia = piniaInstance || createPinia()
+  if (!piniaInstance) {
+    setActivePinia(pinia)
+  }
+
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        gcTime: 0,
+      },
+    },
+  })
+
+  const TestComponent = defineComponent({
+    setup() {
+      return composable()
+    },
+    template: '<div></div>',
+  })
+
+  return mount(TestComponent, {
+    global: {
+      plugins: [pinia, [VueQueryPlugin, { queryClient }]],
+    },
+  })
+}
+
 describe('useNodesQuery', () => {
-  beforeEach(() => {
-    setActivePinia(createPinia())
+  afterEach(() => {
+    setActivePinia(null as any)
   })
 
   it('should fetch and transform nodes', async () => {
-    const query = useNodesQuery()
+    const wrapper = createWrapper(() => {
+      const query = useNodesQuery()
+      return { query }
+    })
+
     await new Promise(resolve => setTimeout(resolve, 100))
     
+    const query = wrapper.vm.query
     expect(query.data.value?.nodes).toBeDefined()
     expect(query.data.value?.edges).toBeDefined()
   })
 })
 
 describe('useCreateNodeMutation', () => {
+  let pinia: ReturnType<typeof createPinia>
+
   beforeEach(() => {
-    setActivePinia(createPinia())
+    pinia = createPinia()
+    setActivePinia(pinia)
     const store = useNodesStore()
-    // Setup initial nodes
     store.setNodes([
       {
         id: '1',
@@ -51,15 +89,23 @@ describe('useCreateNodeMutation', () => {
     ])
   })
 
+  afterEach(() => {
+    setActivePinia(null as any)
+  })
+
   it('should create a new node', async () => {
-    const mutation = useCreateNodeMutation()
+    const wrapper = createWrapper(() => {
+      const mutation = useCreateNodeMutation()
+      return { mutation }
+    }, pinia)
+
     const nodeData: NodeCreationData = {
       type: 'sendMessage',
       title: 'Test Message',
       description: 'Test Description',
     }
 
-    const result = await mutation.mutateAsync(nodeData)
+    const result = await wrapper.vm.mutation.mutateAsync(nodeData)
 
     expect(result).toBeDefined()
     expect(result.id).toBeDefined()
@@ -72,7 +118,11 @@ describe('useCreateNodeMutation', () => {
   })
 
   it('should create node with parent', async () => {
-    const mutation = useCreateNodeMutation()
+    const wrapper = createWrapper(() => {
+      const mutation = useCreateNodeMutation()
+      return { mutation }
+    }, pinia)
+
     const nodeData: NodeCreationData = {
       type: 'addComment',
       title: 'Test Comment',
@@ -80,7 +130,7 @@ describe('useCreateNodeMutation', () => {
       parentId: '1',
     }
 
-    const result = await mutation.mutateAsync(nodeData)
+    const result = await wrapper.vm.mutation.mutateAsync(nodeData)
 
     expect(result).toBeDefined()
     const store = useNodesStore()
@@ -90,8 +140,11 @@ describe('useCreateNodeMutation', () => {
 })
 
 describe('useUpdateNodeMutation', () => {
+  let pinia: ReturnType<typeof createPinia>
+
   beforeEach(() => {
-    setActivePinia(createPinia())
+    pinia = createPinia()
+    setActivePinia(pinia)
     const store = useNodesStore()
     store.setNodes([
       {
@@ -103,10 +156,17 @@ describe('useUpdateNodeMutation', () => {
     ])
   })
 
+  afterEach(() => {
+    setActivePinia(null as any)
+  })
+
   it('should update node data', async () => {
-    const mutation = useUpdateNodeMutation()
+    const wrapper = createWrapper(() => {
+      const mutation = useUpdateNodeMutation()
+      return { mutation }
+    }, pinia)
     
-    await mutation.mutateAsync({
+    await wrapper.vm.mutation.mutateAsync({
       nodeId: '1',
       updates: {
         data: {
@@ -119,12 +179,14 @@ describe('useUpdateNodeMutation', () => {
     const updatedNode = store.getNodeById('1')
     expect(updatedNode?.data.label).toBe('Updated Label')
   })
-
 })
 
 describe('useDeleteNodeMutation', () => {
+  let pinia: ReturnType<typeof createPinia>
+
   beforeEach(() => {
-    setActivePinia(createPinia())
+    pinia = createPinia()
+    setActivePinia(pinia)
     const store = useNodesStore()
     store.setNodes([
       {
@@ -149,17 +211,21 @@ describe('useDeleteNodeMutation', () => {
     ])
   })
 
-  it('should delete a node', async () => {
-    const mutation = useDeleteNodeMutation()
-    const store = useNodesStore()
-    
-    expect(store.nodes).toHaveLength(2)
-    
-    await mutation.mutateAsync('parent')
-
-    // Parent and child should be deleted
-    expect(store.nodes).toHaveLength(0)
+  afterEach(() => {
+    setActivePinia(null as any)
   })
 
-})
+  it('should delete a node', async () => {
+    const wrapper = createWrapper(() => {
+      const mutation = useDeleteNodeMutation()
+      return { mutation }
+    }, pinia)
 
+    const store = useNodesStore()
+    expect(store.nodes).toHaveLength(2)
+    
+    await wrapper.vm.mutation.mutateAsync('parent')
+
+    expect(store.nodes).toHaveLength(0)
+  })
+})
