@@ -1,0 +1,189 @@
+/* Shared component styles */
+
+/* Form styles */
+.form-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: var(--spacing-sm);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.form-input,
+.form-select,
+.message-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--color-input-border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-family: inherit;
+  background: var(--color-surface-elevated);
+  color: var(--color-text-primary);
+  transition: all var(--transition-base);
+  box-shadow: none;
+}
+
+.form-input::placeholder,
+.message-textarea::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.form-input:hover,
+.form-select:hover,
+.message-textarea:hover {
+  border-color: var(--color-border-light);
+}
+
+.form-input:focus,
+.form-select:focus,
+.message-textarea:focus {
+  outline: none;
+  border-color: var(--color-input-border-focus);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.form-input.input-error,
+.form-select.input-error,
+.message-textarea.input-error {
+  border-color: var(--color-error);
+}
+
+.form-input.input-error:focus,
+.form-select.input-error:focus,
+.message-textarea.input-error:focus {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.form-select {
+  cursor: pointer;
+}
+
+.message-textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* Button styles */
+.btn-primary,
+.btn-secondary {
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  border: none;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+  background: var(--color-border-light);
+}
+
+/* Field messages */
+.field-error {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--color-error);
+}
+
+.field-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+/* Close button */
+.close-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-base);
+  flex-shrink: 0;
+}
+
+.close-button img {
+  width: 24px;
+  height: 24px;
+  display: block;
+  filter: brightness(0) saturate(100%) invert(var(--icon-invert, 0));
+}
+
+[data-theme="dark"] .close-button img {
+  --icon-invert: 1;
+}
+
+.close-button:hover {
+  background: var(--color-border-light);
+  color: var(--color-text-primary);
+}
+
+/* Modal overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn var(--transition-base);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+

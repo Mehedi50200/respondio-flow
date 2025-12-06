@@ -107,10 +107,3 @@
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
 }
 
-/* Base styles using theme variables */
-body {
-  background-color: var(--color-background);
-  color: var(--color-text-primary);
-  transition: background-color var(--transition-base), color var(--transition-base);
-}
-

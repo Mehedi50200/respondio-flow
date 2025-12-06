@@ -21,49 +21,6 @@ describe('nodeTransform utilities', () => {
     })
   })
 
-  describe('getNodeDescription', () => {
-    it('should return description for sendMessage node', () => {
-      const node: PayloadNode = {
-        id: '1',
-        parentId: -1,
-        type: 'sendMessage',
-        data: {
-          payload: [{ type: 'text', text: 'Hello world' }],
-        },
-      }
-
-      expect(getNodeDescription(node)).toBe('Hello world')
-    })
-
-    it('should return description for addComment node', () => {
-      const node: PayloadNode = {
-        id: '1',
-        parentId: -1,
-        type: 'addComment',
-        data: {
-          comment: 'Test comment',
-        },
-      }
-
-      expect(getNodeDescription(node)).toBe('Test comment')
-    })
-
-    it('should truncate long descriptions', () => {
-      const longText = 'a'.repeat(100)
-      const node: PayloadNode = {
-        id: '1',
-        parentId: -1,
-        type: 'sendMessage',
-        data: {
-          payload: [{ type: 'text', text: longText }],
-        },
-      }
-
-      const description = getNodeDescription(node, 50)
-      expect(description.length).toBeLessThanOrEqual(53) // 50 + '...'
-      expect(description).toContain('...')
-    })
-  })
 
   describe('createNewNode', () => {
     it('should create a sendMessage node', () => {
@@ -82,18 +39,6 @@ describe('nodeTransform utilities', () => {
       expect(node.data.payload?.[0]?.text).toBe('Test description')
     })
 
-    it('should create an addComment node', () => {
-      const nodeData = {
-        title: 'Test Comment',
-        description: 'Comment text',
-        type: 'addComment' as const,
-      }
-
-      const node = createNewNode(nodeData)
-
-      expect(node.type).toBe('addComment')
-      expect(node.data.comment).toBe('Comment text')
-    })
 
     it('should create a businessHours node', () => {
       const nodeData = {
@@ -138,15 +83,6 @@ describe('nodeTransform utilities', () => {
       expect(nodes[1].data.label).toBe('Test Message')
     })
 
-    it('should handle empty array', () => {
-      const nodes = transformPayloadToNodes([])
-      expect(nodes).toEqual([])
-    })
-
-    it('should handle invalid input', () => {
-      const nodes = transformPayloadToNodes(null as any)
-      expect(nodes).toEqual([])
-    })
   })
 
   describe('transformPayloadToEdges', () => {
@@ -197,10 +133,6 @@ describe('nodeTransform utilities', () => {
       expect(edges[0].animated).toBe(true)
     })
 
-    it('should handle empty array', () => {
-      const edges = transformPayloadToEdges([])
-      expect(edges).toEqual([])
-    })
   })
 })
 

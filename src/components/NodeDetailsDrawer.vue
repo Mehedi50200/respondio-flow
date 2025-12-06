@@ -639,15 +639,6 @@ watch(
   animation: fadeIn 0.2s;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 .node-drawer {
   width: 400px;
   max-width: 90vw;
@@ -797,35 +788,6 @@ watch(
   color: var(--color-text-tertiary);
 }
 
-.close-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: var(--spacing-xs);
-  color: var(--color-text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  transition: all var(--transition-base);
-  flex-shrink: 0;
-}
-
-.close-button img {
-  width: 24px;
-  height: 24px;
-  display: block;
-  filter: brightness(0) saturate(100%) invert(var(--icon-invert, 0));
-}
-
-[data-theme="dark"] .close-button img {
-  --icon-invert: 1;
-}
-
-.close-button:hover {
-  background: var(--color-border-light);
-  color: var(--color-text-primary);
-}
 
 .drawer-content {
   flex: 1;
@@ -992,129 +954,8 @@ watch(
   background: var(--color-surface-elevated);
 }
 
-.form-group {
-  margin-bottom: var(--spacing-lg);
-}
-
-.form-group:last-child {
-  margin-bottom: 0;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: var(--spacing-sm);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text-primary);
-}
-
-.message-textarea {
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid var(--color-input-border);
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-family: inherit;
-  resize: vertical;
-  background: var(--color-surface-elevated);
-  color: var(--color-text-primary);
-  transition: all var(--transition-base);
-  box-shadow: none;
-  line-height: 1.5;
-}
-
-.message-textarea::placeholder {
-  color: var(--color-text-tertiary);
-}
-
-.message-textarea:hover {
-  border-color: var(--color-border-light);
-}
-
-.message-textarea:focus {
-  outline: none;
-  border-color: var(--color-input-border-focus);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
-  background: var(--color-surface-elevated);
-}
-
-.form-select {
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid var(--color-input-border);
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-family: inherit;
-  background: var(--color-surface-elevated);
-  color: var(--color-text-primary);
-  transition: all var(--transition-base);
-  box-shadow: none;
-  cursor: pointer;
-}
-
-.form-select:hover {
-  border-color: var(--color-border-light);
-}
-
-.form-select:focus {
-  outline: none;
-  border-color: var(--color-input-border-focus);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
-  background: var(--color-surface-elevated);
-}
-
-.form-input {
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid var(--color-input-border);
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-family: inherit;
-  background: var(--color-surface-elevated);
-  color: var(--color-text-primary);
-  transition: all var(--transition-base);
-  box-shadow: none;
-}
-
-.form-input::placeholder {
-  color: var(--color-text-tertiary);
-}
-
-.form-input:hover {
-  border-color: var(--color-border-light);
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: var(--color-input-border-focus);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
-  background: var(--color-surface-elevated);
-}
-
-.form-input.input-error,
-.message-textarea.input-error {
-  border-color: var(--color-error);
-}
-
-.form-input.input-error:focus,
-.message-textarea.input-error:focus {
-  border-color: var(--color-error);
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
-}
-
 .field-error {
-  display: block;
-  margin-top: 4px;
-  font-size: 12px;
-  color: var(--color-error);
   font-weight: 500;
-}
-
-.field-hint {
-  display: block;
-  margin-top: 4px;
-  font-size: 12px;
-  color: var(--color-text-tertiary);
 }
 
 .field-warning {
@@ -1154,16 +995,6 @@ watch(
   animation: slideUp 0.3s;
 }
 
-@keyframes slideUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
 
 .delete-confirm-modal h3 {
   margin: 0 0 var(--spacing-md) 0;

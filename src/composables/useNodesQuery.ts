@@ -15,7 +15,7 @@ export function useNodesQuery() {
   const query = useQuery({
     queryKey: ['nodes'],
     queryFn: async () => {
-      const payloadData = (await import('../../assets/payload.json')) as {
+      const payloadData = (await import('../../mock/payload.json')) as {
         default: PayloadNode[]
       }
 

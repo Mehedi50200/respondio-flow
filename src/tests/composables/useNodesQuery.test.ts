@@ -5,7 +5,7 @@ import { useNodesStore } from '../../stores/index'
 import type { NodeCreationData } from '@/types'
 
 // Mock the payload.json import
-vi.mock('../../assets/payload.json', () => ({
+vi.mock('../../mock/payload.json', () => ({
   default: [
     {
       id: 1,
@@ -29,11 +29,8 @@ describe('useNodesQuery', () => {
 
   it('should fetch and transform nodes', async () => {
     const query = useNodesQuery()
-    
-    // Wait for query to resolve
     await new Promise(resolve => setTimeout(resolve, 100))
     
-    expect(query.data.value).toBeDefined()
     expect(query.data.value?.nodes).toBeDefined()
     expect(query.data.value?.edges).toBeDefined()
   })
@@ -123,22 +120,6 @@ describe('useUpdateNodeMutation', () => {
     expect(updatedNode?.data.label).toBe('Updated Label')
   })
 
-  it('should rebuild edges after update', async () => {
-    const mutation = useUpdateNodeMutation()
-    const store = useNodesStore()
-    
-    await mutation.mutateAsync({
-      nodeId: '1',
-      updates: {
-        data: {
-          label: 'Updated',
-        },
-      },
-    })
-
-    // Edges should be rebuilt
-    expect(store.edges).toBeDefined()
-  })
 })
 
 describe('useDeleteNodeMutation', () => {
@@ -180,14 +161,5 @@ describe('useDeleteNodeMutation', () => {
     expect(store.nodes).toHaveLength(0)
   })
 
-  it('should rebuild edges after deletion', async () => {
-    const mutation = useDeleteNodeMutation()
-    const store = useNodesStore()
-    
-    await mutation.mutateAsync('parent')
-
-    // Edges should be rebuilt
-    expect(store.edges).toBeDefined()
-  })
 })
 

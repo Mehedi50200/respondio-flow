@@ -17,8 +17,8 @@ A comprehensive Vue 3 application for creating, editing, and managing flow chart
 
 ```
 respondio-flow/
-├── assets/
-│   └── payload.json              # Initial node data (JSON payload)
+├── mock/
+│   └── payload.json              # Mock node data (JSON payload)
 ├── docs/
 │   ├── requirements.md           # Project requirements
 │   └── progress.md               # Development progress tracker
@@ -274,7 +274,7 @@ src/tests/
 
 ### Node Transformation
 
-- **Payload Format** - Original JSON structure from `payload.json`
+- **Payload Format** - Original JSON structure from `mock/payload.json`
 - **Vue Flow Format** - Transformed structure for Vue Flow library
 - **Bidirectional Conversion** - Transform between formats as needed
 - **Position Calculation** - Smart positioning for new nodes
@@ -315,7 +315,7 @@ Modal component for creating new nodes. Includes:
 ### Composables
 
 #### `useNodesQuery()`
-Fetches nodes from payload.json and transforms them to Vue Flow format.
+Fetches nodes from mock/payload.json and transforms them to Vue Flow format.
 
 ```typescript
 const { data, isLoading, isError } = useNodesQuery()

@@ -256,28 +256,6 @@ watch(() => props.isOpen, (isOpen) => {
 </script>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: fadeIn var(--transition-base);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
 
 .modal-container {
   background: var(--color-surface-elevated);
@@ -291,16 +269,10 @@ watch(() => props.isOpen, (isOpen) => {
   transition: background-color var(--transition-base);
 }
 
-@keyframes slideUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+.delete-confirm-modal {
+  animation: slideUp 0.3s;
 }
+
 
 .modal-header {
   display: flex;
@@ -317,91 +289,23 @@ watch(() => props.isOpen, (isOpen) => {
   color: var(--color-text-primary);
 }
 
-.close-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: var(--spacing-xs);
-  color: var(--color-text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  transition: all var(--transition-base);
-}
-
 .close-button:hover {
   background: var(--color-surface);
-  color: var(--color-text-primary);
 }
 
 .modal-form {
   padding: var(--spacing-lg);
 }
 
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: var(--spacing-sm);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text-primary);
-}
-
 .form-group input,
 .form-group textarea,
 .form-group select {
-  width: 100%;
   padding: 10px 12px;
   background: var(--color-background);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-family: inherit;
-  color: var(--color-text-primary);
-  transition: border-color var(--transition-base), background-color var(--transition-base);
-}
-
-.form-group input:focus,
-.form-group textarea:focus,
-.form-group select:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
-}
-
-.form-group input.input-error,
-.form-group textarea.input-error,
-.form-group select.input-error {
-  border-color: var(--color-error);
-}
-
-.form-group input.input-error:focus,
-.form-group textarea.input-error:focus,
-.form-group select.input-error:focus {
-  border-color: var(--color-error);
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
-}
-
-.field-error {
-  display: block;
-  margin-top: 4px;
-  font-size: 12px;
-  color: var(--color-error);
-}
-
-.field-hint {
-  display: block;
-  margin-top: 4px;
-  font-size: 12px;
-  color: var(--color-text-tertiary);
 }
 
 .form-group textarea {
-  resize: vertical;
   min-height: 80px;
 }
 
@@ -429,41 +333,6 @@ watch(() => props.isOpen, (isOpen) => {
   gap: 12px;
   justify-content: flex-end;
   margin-top: 24px;
-}
-
-.btn-primary,
-.btn-secondary {
-  padding: 10px 20px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition-base);
-  border: none;
-}
-
-.btn-primary {
-  background: var(--color-primary);
-  color: var(--color-text-inverse);
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: var(--color-primary-hover);
-}
-
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn-secondary {
-  background: var(--color-surface);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border);
-}
-
-.btn-secondary:hover {
-  background: var(--color-border-light);
 }
 </style>
 
