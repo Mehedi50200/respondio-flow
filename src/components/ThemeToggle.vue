@@ -25,8 +25,8 @@ const { theme, toggleTheme } = useTheme()
 <style scoped>
 .theme-toggle {
   position: fixed;
-  bottom: var(--spacing-md);
-  right: var(--spacing-md);
+  top: var(--spacing-md);
+  left: var(--spacing-md);
   z-index: 1000;
   background: none;
   border: none;
@@ -85,6 +85,11 @@ const { theme, toggleTheme } = useTheme()
   width: 16px;
   height: 16px;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: brightness(0) saturate(100%) invert(var(--icon-invert, 0));
+}
+
+[data-theme="dark"] .icon {
+  --icon-invert: 1;
 }
 
 .theme-toggle:hover .icon {

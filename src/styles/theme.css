@@ -5,6 +5,9 @@
   --color-surface-elevated: #ffffff;
   --color-border: #e5e7eb;
   --color-border-light: #f3f4f6;
+  --color-input-border: #d1d5db;
+  --color-input-border-focus: #3b82f6;
+  --color-table-border: #d1d5db;
   
   /* Text Colors */
   --color-text-primary: #111827;
@@ -66,6 +69,9 @@
   --color-surface-elevated: #374151;
   --color-border: #374151;
   --color-border-light: #4b5563;
+  --color-input-border: #4b5563;
+  --color-input-border-focus: #60a5fa;
+  --color-table-border: #4b5563;
   
   /* Text Colors */
   --color-text-primary: #f9fafb;

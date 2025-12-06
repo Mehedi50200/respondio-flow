@@ -213,4 +213,39 @@ const handleNodeCreated = () => {
   flex: 1;
   position: relative;
 }
+
+/* Edge label styling - Vue Flow uses SVG for labels */
+.vue-flow__edge-label {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  fill: #ffffff !important;
+  pointer-events: none;
+  padding-left: 12px !important;
+  padding-right: 12px !important;
+}
+
+/* Add padding to label wrapper for better spacing */
+.vue-flow__edge-labelwrapper {
+  padding: 0 12px !important;
+}
+
+/* Success label background color - rx/ry are set via labelBgStyle in edge config */
+.vue-flow__edge[data-label*="Success"] .vue-flow__edge-labelbg,
+.vue-flow__edge[data-label="Success"] .vue-flow__edge-labelbg {
+  fill: var(--color-node-success) !important;
+}
+
+/* Failure label background color */
+.vue-flow__edge[data-label*="Failure"] .vue-flow__edge-labelbg,
+.vue-flow__edge[data-label="Failure"] .vue-flow__edge-labelbg {
+  fill: var(--color-node-failure) !important;
+}
+
+/* Ensure label text is white for both success and failure */
+.vue-flow__edge[data-label*="Success"] .vue-flow__edge-label,
+.vue-flow__edge[data-label="Success"] .vue-flow__edge-label,
+.vue-flow__edge[data-label*="Failure"] .vue-flow__edge-label,
+.vue-flow__edge[data-label="Failure"] .vue-flow__edge-label {
+  fill: #ffffff !important;
+}
 </style>

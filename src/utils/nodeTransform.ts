@@ -302,17 +302,40 @@ export function transformPayloadToEdges(payloadData: PayloadNode[]): VueFlowEdge
     let edgeType: string = 'default'
     let label: string = ''
     let style: { stroke?: string; strokeWidth?: number } = {}
+    let labelStyle: { [key: string]: string | number } | undefined
+    let labelBgStyle: { [key: string]: string | number } | undefined
+    let labelBgPadding: [number, number] | undefined
+    let labelBgBorderRadius: number | undefined
 
     if (connector) {
       // This node's parent is a connector, so edge goes from connector's parent to this node
       sourceId = String(connector.parentId)
       const connectorType = connector.data?.connectorType
+      const isSuccess = connectorType === 'success'
       edgeType = 'smoothstep'
-      label = connectorType === 'success' ? 'Success' : 'Failure'
+      label = isSuccess ? 'Success' : 'Failure'
       style = {
-        stroke: connectorType === 'success' ? '#10b981' : '#ef4444',
+        stroke: isSuccess ? '#10b981' : '#ef4444',
         strokeWidth: 2,
       }
+      
+      // Style the label text
+      labelStyle = {
+        fill: '#ffffff',
+        fontWeight: 500,
+        fontSize: 12,
+      }
+      
+      // Style the label background with rounded corners
+      labelBgStyle = {
+        fill: isSuccess ? '#10b981' : '#ef4444',
+        rx: 6,
+        ry: 6,
+      }
+      
+      // Add padding: [vertical, horizontal] - minimal vertical, more horizontal padding
+      labelBgPadding = [2, 12]
+      labelBgBorderRadius = 6
     }
 
     edges.push({
@@ -322,6 +345,10 @@ export function transformPayloadToEdges(payloadData: PayloadNode[]): VueFlowEdge
       type: edgeType,
       label,
       style,
+      labelStyle,
+      labelBgStyle,
+      labelBgPadding,
+      labelBgBorderRadius,
       animated: !!connector,
     })
   })
@@ -423,16 +450,33 @@ export function buildEdgesFromVueFlowNodes(vueFlowNodes: VueFlowNode[]): VueFlow
     let edgeType: string = 'default'
     let label: string = ''
     let style: { stroke?: string; strokeWidth?: number } = {}
+    let labelStyle: { [key: string]: string | number } | undefined
+    let labelBgStyle: { [key: string]: string | number } | undefined
 
     if (connector) {
       // This node's parent is a connector, so edge goes from connector's parent to this node
       sourceId = String(connector.parentId)
       const connectorType = connector.data?.connectorType
+      const isSuccess = connectorType === 'success'
       edgeType = 'smoothstep'
-      label = connectorType === 'success' ? 'Success' : 'Failure'
+      label = isSuccess ? 'Success' : 'Failure'
       style = {
-        stroke: connectorType === 'success' ? '#10b981' : '#ef4444',
+        stroke: isSuccess ? '#10b981' : '#ef4444',
         strokeWidth: 2,
+      }
+      
+      // Style the label text
+      labelStyle = {
+        fill: '#ffffff',
+        fontWeight: 500,
+        fontSize: 12,
+      }
+      
+      // Style the label background with rounded corners
+      labelBgStyle = {
+        fill: isSuccess ? '#10b981' : '#ef4444',
+        rx: 6,
+        ry: 6,
       }
     }
 
@@ -443,6 +487,8 @@ export function buildEdgesFromVueFlowNodes(vueFlowNodes: VueFlowNode[]): VueFlow
       type: edgeType,
       label,
       style,
+      labelStyle,
+      labelBgStyle,
       animated: !!connector,
     })
   })
