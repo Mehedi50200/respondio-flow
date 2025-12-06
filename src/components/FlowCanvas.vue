@@ -132,7 +132,7 @@ const nodes = computed({
     // Only update store if there are real changes (not just selection state)
     // Position changes are also handled by onNodesChange, but we sync here too for consistency
     if (hasRealChanges) {
-      store.setNodes(nodesWithoutSelected)
+    store.setNodes(nodesWithoutSelected)
     }
     // If it's only a selection change, we ignore it - Vue Flow manages selection internally
   },

@@ -4,9 +4,9 @@
       <div class="drawer-header">
         <div class="header-content">
           <div class="header-top-row">
-            <div class="node-icon-header" :class="nodeIconClass">
+          <div class="node-icon-header" :class="nodeIconClass">
               <img :src="nodeIconSrc" :alt="nodeTitle" />
-            </div>
+          </div>
             <h2 class="node-title-header">{{ nodeTitle }}</h2>
           </div>
           <p class="node-description-header">{{ nodeDescription }}</p>

@@ -1,12 +1,13 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
+import { useQuery, useMutation } from '@tanstack/vue-query'
 import { useNodesStore } from '../stores/index'
 import {
   transformPayloadToNodes,
   transformPayloadToEdges,
   buildEdgesFromVueFlowNodes,
   createNewNode,
+  calculateNewNodePosition,
 } from '../utils/nodeTransform'
-import type { NodeCreationData, NodeUpdateData, PayloadNode } from '@/types'
+import type { NodeCreationData, NodeUpdateData, PayloadNode, VueFlowNode } from '@/types'
 
 /**
  * Fetch nodes from payload.json
@@ -43,7 +44,6 @@ export function useNodesQuery() {
  * Create a new node mutation
  */
 export function useCreateNodeMutation() {
-  const queryClient = useQueryClient()
   const store = useNodesStore()
 
   return useMutation({
@@ -52,55 +52,65 @@ export function useCreateNodeMutation() {
       // Create new node in payload format
       const payloadNode = createNewNode(nodeData)
 
-      // Calculate position for the new node
-      // We need to convert existing Vue Flow nodes back to payload format for position calculation
-      const existingPayloadNodes: PayloadNode[] = store.nodes.map((node) => {
+      // Collect all payload nodes including connectors
+      // We need to preserve connectors from originalData even though they're filtered out of Vue Flow nodes
+      const existingPayloadNodes: PayloadNode[] = []
+      const connectorNodes: PayloadNode[] = []
+      
+      store.nodes.forEach((node) => {
         const originalData = node.data?.originalData
         if (originalData) {
-          return originalData
+          // If it's a connector, store it separately (connectors are needed for edge building)
+          if (originalData.type === 'dateTimeConnector') {
+            connectorNodes.push(originalData)
+          } else {
+            existingPayloadNodes.push(originalData)
+          }
+        } else {
+          // Reconstruct payload node from Vue Flow node (fallback for nodes without originalData)
+          existingPayloadNodes.push({
+            id: node.id,
+            parentId: node.data?.parentId ?? -1,
+            type: mapVueFlowTypeToPayloadType(node.type),
+            name: node.data?.label,
+            data: { ...node.data },
+          } as PayloadNode)
         }
-        // Reconstruct payload node from Vue Flow node
-        return {
-          id: node.id,
-          parentId: node.data?.parentId ?? -1,
-          type: mapVueFlowTypeToPayloadType(node.type),
-          name: node.data?.label,
-          data: { ...node.data },
-        } as PayloadNode
       })
 
-      // Add the new node to calculate positions for all nodes
-      const allPayloadNodes = [...existingPayloadNodes, payloadNode]
-      const vueFlowNodes = transformPayloadToNodes(allPayloadNodes)
+      // PRESERVE existing node positions - only calculate position for the new node
+      // This ensures smooth animations and doesn't disrupt user's current layout
+      const allPayloadNodes = [...existingPayloadNodes, ...connectorNodes, payloadNode]
       
-      // Find the newly created node
-      const vueFlowNode = vueFlowNodes.find((n) => String(n.id) === String(payloadNode.id))
-      if (!vueFlowNode) {
+      // Calculate position for the new node based on existing nodes
+      const newPosition = calculateNewNodePosition(
+        payloadNode,
+        store.nodes,
+        allPayloadNodes
+      )
+
+      // Create the new Vue Flow node with calculated position
+      // We need to transform just this node to get the proper structure
+      const tempNodes = transformPayloadToNodes([payloadNode])
+      const newVueFlowNode = tempNodes[0]
+      if (!newVueFlowNode) {
         throw new Error('Failed to create node')
       }
 
-      // Update positions for all existing nodes (they may have shifted)
-      const updatedNodes = store.nodes.map((existingNode) => {
-        const updatedNode = vueFlowNodes.find((n) => String(n.id) === String(existingNode.id))
-        if (updatedNode) {
-          return {
-            ...existingNode,
-            position: updatedNode.position,
-          }
-        }
-        return existingNode
-      })
+      // Update the position to the calculated one
+      newVueFlowNode.position = newPosition
 
-      // Add the new node
-      const nodes = [...updatedNodes, vueFlowNode]
+      // Preserve all existing nodes exactly as they are (positions, data, everything)
+      const updatedNodes: VueFlowNode[] = [...store.nodes, newVueFlowNode]
 
       // Rebuild edges from all Vue Flow nodes
-      const edges = buildEdgesFromVueFlowNodes(nodes)
+      // This function needs connectors in originalData to build edges correctly
+      const edges = buildEdgesFromVueFlowNodes(updatedNodes)
 
-      store.setNodes(nodes)
+      store.setNodes(updatedNodes)
       store.setEdges(edges)
 
-      return vueFlowNode
+      return newVueFlowNode
     },
     // Don't invalidate query - we're updating the store directly
     // In a real app with API, we would invalidate here
@@ -125,7 +135,6 @@ function mapVueFlowTypeToPayloadType(vueFlowType: string): PayloadNode['type'] {
  * Update an existing node mutation
  */
 export function useUpdateNodeMutation() {
-  const queryClient = useQueryClient()
   const store = useNodesStore()
 
   return useMutation({
@@ -148,7 +157,6 @@ export function useUpdateNodeMutation() {
  * Delete a node mutation
  */
 export function useDeleteNodeMutation() {
-  const queryClient = useQueryClient()
   const store = useNodesStore()
 
   return useMutation({
