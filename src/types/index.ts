@@ -60,6 +60,14 @@ export interface VueFlowEdge {
     stroke?: string
     strokeWidth?: number
   }
+  labelStyle?: {
+    [key: string]: string | number
+  }
+  labelBgStyle?: {
+    [key: string]: string | number
+  }
+  labelBgPadding?: [number, number]
+  labelBgBorderRadius?: number
   animated?: boolean
 }
 

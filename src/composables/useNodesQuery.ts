@@ -1,34 +1,27 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
+import { useQuery, useMutation } from '@tanstack/vue-query'
 import { useNodesStore } from '../stores/index'
 import {
   transformPayloadToNodes,
   transformPayloadToEdges,
   buildEdgesFromVueFlowNodes,
   createNewNode,
+  calculateNewNodePosition,
 } from '../utils/nodeTransform'
-import type { NodeCreationData, NodeUpdateData, PayloadNode } from '@/types'
+import type { NodeCreationData, NodeUpdateData, PayloadNode, VueFlowNode } from '@/types'
 
-/**
- * Fetch nodes from payload.json
- */
 export function useNodesQuery() {
   const store = useNodesStore()
 
   const query = useQuery({
     queryKey: ['nodes'],
     queryFn: async () => {
-      // Fetch payload.json
-      // In Vite, we can import JSON directly or fetch from public folder
-      // For now, we'll import it directly
-      const payloadData = (await import('../../assets/payload.json')) as {
+      const payloadData = (await import('../../mock/payload.json')) as {
         default: PayloadNode[]
       }
 
-      // Transform to Vue Flow format
       const nodes = transformPayloadToNodes(payloadData.default)
       const edges = transformPayloadToEdges(payloadData.default)
 
-      // Update store
       store.setNodes(nodes)
       store.setEdges(edges)
 
@@ -39,84 +32,96 @@ export function useNodesQuery() {
   return query
 }
 
-/**
- * Create a new node mutation
- */
 export function useCreateNodeMutation() {
-  const queryClient = useQueryClient()
   const store = useNodesStore()
 
   return useMutation({
     mutationFn: async (nodeData: NodeCreationData) => {
-      // In a real app, this would be an API call
-      // Create new node in payload format
       const payloadNode = createNewNode(nodeData)
 
-      // Transform to Vue Flow format
-      const vueFlowNode = transformPayloadToNodes([payloadNode])[0]
+      const existingPayloadNodes: PayloadNode[] = []
+      const connectorNodes: PayloadNode[] = []
+      
+      store.nodes.forEach((node) => {
+        const originalData = node.data?.originalData
+        if (originalData) {
+          if (originalData.type === 'dateTimeConnector') {
+            connectorNodes.push(originalData)
+          } else {
+            existingPayloadNodes.push(originalData)
+          }
+        } else {
+          existingPayloadNodes.push({
+            id: node.id,
+            parentId: node.data?.parentId ?? -1,
+            type: mapVueFlowTypeToPayloadType(node.type),
+            name: node.data?.label,
+            data: { ...node.data },
+          } as PayloadNode)
+        }
+      })
 
-      // Add to store
-      const nodes = [...store.nodes, vueFlowNode]
+      const allPayloadNodes = [...existingPayloadNodes, ...connectorNodes, payloadNode]
+      const newPosition = calculateNewNodePosition(
+        payloadNode,
+        store.nodes,
+        allPayloadNodes
+      )
 
-      // Rebuild edges from all Vue Flow nodes
-      const edges = buildEdgesFromVueFlowNodes(nodes)
+      const tempNodes = transformPayloadToNodes([payloadNode])
+      const newVueFlowNode = tempNodes[0]
+      if (!newVueFlowNode) {
+        throw new Error('Failed to create node')
+      }
 
-      store.setNodes(nodes)
+      newVueFlowNode.position = newPosition
+      const updatedNodes: VueFlowNode[] = [...store.nodes, newVueFlowNode]
+      const edges = buildEdgesFromVueFlowNodes(updatedNodes)
+
+      store.setNodes(updatedNodes)
       store.setEdges(edges)
 
-      return vueFlowNode
-    },
-    onSuccess: () => {
-      // Invalidate and refetch nodes query
-      queryClient.invalidateQueries({ queryKey: ['nodes'] })
+      return newVueFlowNode
     },
   })
 }
 
-/**
- * Update an existing node mutation
- */
+function mapVueFlowTypeToPayloadType(vueFlowType: string): PayloadNode['type'] {
+  const typeMap: Record<string, PayloadNode['type']> = {
+    trigger: 'trigger',
+    sendMessage: 'sendMessage',
+    addComment: 'addComment',
+    businessHours: 'dateTime',
+    dateTimeConnector: 'dateTimeConnector',
+  }
+  return typeMap[vueFlowType] || 'sendMessage'
+}
+
 export function useUpdateNodeMutation() {
-  const queryClient = useQueryClient()
   const store = useNodesStore()
 
   return useMutation({
     mutationFn: async ({ nodeId, updates }: NodeUpdateData) => {
-      // In a real app, this would be an API call
       store.updateNode(nodeId, updates)
-
-      // Rebuild edges from all Vue Flow nodes
-      // This handles parentId changes correctly
       const edges = buildEdgesFromVueFlowNodes(store.nodes)
       store.setEdges(edges)
-
       return { nodeId, updates }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['nodes'] })
     },
   })
 }
 
-/**
- * Delete a node mutation
- */
 export function useDeleteNodeMutation() {
-  const queryClient = useQueryClient()
   const store = useNodesStore()
 
   return useMutation({
     mutationFn: async (nodeId: string | number) => {
-      // In a real app, this would be an API call
       store.deleteNode(nodeId)
 
-      // Also delete child nodes recursively
       const deleteChildren = (parentId: string | number) => {
         const children = store.nodes.filter((n) => {
           const originalData = n.data?.originalData
           const originalParentId = originalData?.parentId
           const dataParentId = n.data?.parentId
-          // Use type-safe comparison for mixed ID types
           return (
             (originalParentId !== undefined && String(originalParentId) === String(parentId)) ||
             (dataParentId !== undefined && String(dataParentId) === String(parentId))
@@ -130,15 +135,10 @@ export function useDeleteNodeMutation() {
       }
 
       deleteChildren(nodeId)
-
-      // Rebuild edges from remaining Vue Flow nodes
       const edges = buildEdgesFromVueFlowNodes(store.nodes)
       store.setEdges(edges)
 
       return nodeId
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['nodes'] })
     },
   })
 }
