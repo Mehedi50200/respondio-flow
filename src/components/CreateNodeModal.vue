@@ -232,16 +232,12 @@ const handleSubmit = async () => {
       parentId: props.selectedParentId || undefined,
     }
 
-    // Add timezone for business hours nodes
     if (formData.value.type === 'businessHours') {
       ;(nodeData as any).timezone = formData.value.timezone
     }
 
     await createNodeMutation.mutateAsync(nodeData)
-    
-    // Save state to history after creation
     saveState()
-    
     resetForm()
     emit('created')
     emit('close')
@@ -252,7 +248,6 @@ const handleSubmit = async () => {
   }
 }
 
-// Reset form when modal closes
 watch(() => props.isOpen, (isOpen) => {
   if (!isOpen) {
     resetForm()

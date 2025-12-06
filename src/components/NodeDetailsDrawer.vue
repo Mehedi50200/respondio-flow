@@ -264,14 +264,9 @@ const commentText = ref('')
 const triggerType = ref('conversationOpened')
 const attachments = ref<Array<{ type: string; attachment: string }>>([])
 
-// Editable title and description
 const editableTitle = ref('')
 const editableDescription = ref('')
-
-// Delete confirmation
 const showDeleteConfirm = ref(false)
-
-// Field validation errors
 const fieldErrors = ref<{
   title?: string
   messageText?: string
@@ -361,7 +356,6 @@ const clearFieldError = (field: keyof typeof fieldErrors.value) => {
   }
 }
 
-// Title and description editing
 const saveTitle = async () => {
   if (!node.value) return
   
@@ -384,7 +378,6 @@ const saveTitle = async () => {
     },
   })
   
-  // Save state to history after edit
   saveState()
 }
 
@@ -401,11 +394,9 @@ const saveDescription = async () => {
     },
   })
   
-  // Save state to history after edit
   saveState()
 }
 
-// Delete functionality
 const handleDeleteClick = () => {
   if (isRootNode.value) return
   showDeleteConfirm.value = true
@@ -420,23 +411,17 @@ const confirmDelete = async () => {
   
   try {
     await deleteNodeMutation.mutateAsync(node.value.id)
-    
-    // Save state to history after deletion
     saveState()
-    
     showDeleteConfirm.value = false
-    // Navigate back to canvas after deletion
     router.push('/')
   } catch (error) {
     console.error('Failed to delete node:', error)
-    // Could show error toast here
   }
 }
 
 const updateBusinessHours = async () => {
   if (!node.value) return
   
-  // Validate time ranges
   const invalidDays: string[] = []
   daysOfWeek.forEach((day) => {
     const start = businessHours.value[day.key].startTime
@@ -470,7 +455,6 @@ const updateBusinessHours = async () => {
     },
   })
   
-  // Save state to history after edit
   saveState()
 }
 
@@ -504,16 +488,12 @@ const updateMessage = async () => {
     },
   })
   
-  // Save state to history after edit
   saveState()
 }
 
-// Attachment handling
 const isImage = (url: string): boolean => {
   if (!url) return false
-  // Check for data URLs
   if (url.startsWith('data:image/')) return true
-  // Check for image extensions (handle URLs with query parameters)
   const urlWithoutQuery = url.split('?')[0]
   return /\.(jpg|jpeg|png|gif|webp|svg|bmp|ico)$/i.test(urlWithoutQuery)
 }
@@ -523,25 +503,21 @@ const handleFileUpload = async (event: Event) => {
   const file = target.files?.[0]
   if (!file) return
 
-  // Validate file type
   if (!file.type.startsWith('image/')) {
     fieldErrors.value.messageText = 'Please upload an image file (jpg, png, gif, webp, etc.)'
     target.value = ''
     return
   }
 
-  // Validate file size (max 5MB)
-  const maxSize = 5 * 1024 * 1024 // 5MB in bytes
+  const maxSize = 5 * 1024 * 1024
   if (file.size > maxSize) {
     fieldErrors.value.messageText = 'File size must be less than 5MB'
     target.value = ''
     return
   }
 
-  // Clear any previous errors
   clearFieldError('messageText')
 
-  // Read file as data URL for preview
   const reader = new FileReader()
   reader.onerror = () => {
     fieldErrors.value.messageText = 'Failed to read file. Please try again.'
@@ -556,8 +532,6 @@ const handleFileUpload = async (event: Event) => {
     updateMessage()
   }
   reader.readAsDataURL(file)
-
-  // Reset input
   target.value = ''
 }
 
@@ -567,14 +541,10 @@ const removeAttachment = async (index: number) => {
 }
 
 const handleImageError = (index: number) => {
-  // If image fails to load, we could show a placeholder
-  // For now, the image will just not display
   console.warn(`Failed to load attachment image at index ${index}`)
 }
 
 const handleImageLoad = () => {
-  // Image loaded successfully
-  // Could add loading state management here if needed
 }
 
 const updateComment = async () => {
@@ -590,7 +560,6 @@ const updateComment = async () => {
     },
   })
   
-  // Save state to history after edit
   saveState()
 }
 
@@ -612,20 +581,16 @@ const updateTrigger = async () => {
     },
   })
   
-  // Save state to history after edit
   saveState()
 }
 
-// Initialize form data when node changes
 watch(
   () => node.value,
   (newNode) => {
     if (!newNode) return
 
-    // Update editable title
     editableTitle.value = nodeTitle.value
     
-    // Update editable description only for Business Hours nodes
     if (newNode.type === 'businessHours') {
       editableDescription.value = nodeDescription.value
     } else {
@@ -649,10 +614,7 @@ watch(
     } else if (newNode.type === 'sendMessage') {
       const textPayload = newNode.data?.payload?.find((p: any) => p.type === 'text')
       messageText.value = textPayload?.text || ''
-      
-      // Load attachments
-      const attachmentPayloads = newNode.data?.payload?.filter((p: any) => p.type === 'attachment') || []
-      attachments.value = attachmentPayloads
+      attachments.value = newNode.data?.payload?.filter((p: any) => p.type === 'attachment') || []
     } else if (newNode.type === 'addComment') {
       commentText.value = newNode.data?.comment || ''
     } else if (newNode.type === 'trigger') {

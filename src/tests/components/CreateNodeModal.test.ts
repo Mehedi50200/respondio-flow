@@ -3,7 +3,6 @@ import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import { createApp } from 'vue'
 import CreateNodeModal from '../../components/CreateNodeModal.vue'
-import { useNodesStore } from '../../stores/index'
 
 // Mock Vue Query
 vi.mock('@tanstack/vue-query', () => ({

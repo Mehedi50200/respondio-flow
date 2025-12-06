@@ -63,13 +63,10 @@ import { useHistory } from '@/composables/useHistory'
 import { useKeyboardNavigation } from '@/composables/useKeyboardNavigation'
 import type { VueFlowNode, VueFlowEdge } from '@/types'
 
-// Import custom node components
 import TriggerNode from './nodes/TriggerNode.vue'
 import SendMessageNode from './nodes/SendMessageNode.vue'
 import AddCommentNode from './nodes/AddCommentNode.vue'
 import BusinessHoursNode from './nodes/BusinessHoursNode.vue'
-
-// Import create node components
 import CreateNodeModal from './CreateNodeModal.vue'
 import NodeDetailsDrawer from './NodeDetailsDrawer.vue'
 import ThemeToggle from './ThemeToggle.vue'
@@ -80,9 +77,7 @@ const { theme } = useTheme()
 const { canUndo, canRedo, undo, redo, saveState, initHistory } = useHistory()
 const keyboardNav = useKeyboardNavigation()
 
-// Handle undo/redo keyboard shortcuts
 const handleUndoRedo = (event: KeyboardEvent) => {
-  // Don't handle if typing in input/textarea
   const target = event.target as HTMLElement
   if (
     target.tagName === 'INPUT' ||
@@ -105,7 +100,6 @@ const handleUndoRedo = (event: KeyboardEvent) => {
   }
 }
 
-// Combine keyboard handlers
 const combinedKeyHandler = (event: KeyboardEvent) => {
   handleUndoRedo(event)
   if (keyboardNav.handleKeyDown) {
@@ -119,7 +113,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', combinedKeyHandler)
-  // Clean up save state timeout
   if (saveStateTimeout) {
     clearTimeout(saveStateTimeout)
     saveStateTimeout = null
@@ -131,29 +124,22 @@ const selectedParentId = ref<string | number | null>(null)
 const isDrawerOpen = computed(() => !!router.currentRoute.value.params.id)
 const selectedNodeId = computed(() => router.currentRoute.value.params.id as string | undefined)
 
-// Dynamic pattern color based on theme
 const patternColor = computed(() => {
   return theme.value === 'dark' ? '#374151' : '#9ca3af'
 })
 
-// Provide add-node handler to all nodes
 const handleAddNode = (nodeId: string) => {
   selectedParentId.value = nodeId
   isCreateModalOpen.value = true
 }
 provide('addNodeHandler', handleAddNode)
-
-// Provide keyboard focused node ID to all nodes
 provide('keyboardFocusedNodeId', keyboardNav.focusedNodeId)
 
-// Fetch nodes data (triggers query and updates store)
 const { data: nodesData } = useNodesQuery()
 
-// Initialize history when nodes are loaded (only once)
 let historyInitialized = false
 watch(nodesData, (data) => {
   if (data?.nodes && data.nodes.length > 0 && !historyInitialized) {
-    // Use nextTick to ensure store is updated
     setTimeout(() => {
       if (store.nodes.length > 0) {
         initHistory()
@@ -163,19 +149,14 @@ watch(nodesData, (data) => {
   }
 }, { immediate: true })
 
-// Watch for store changes and save to history (except during undo/redo)
-// Use a debounce to avoid saving on every single change
 let saveStateTimeout: ReturnType<typeof setTimeout> | null = null
 watch(
   [() => store.nodes, () => store.edges],
   () => {
-    // Only save if history is initialized
     if (historyInitialized) {
-      // Clear any pending save
       if (saveStateTimeout) {
         clearTimeout(saveStateTimeout)
       }
-      // Debounce saves to avoid duplicate saves during rapid changes
       saveStateTimeout = setTimeout(() => {
         saveState()
         saveStateTimeout = null
@@ -185,8 +166,6 @@ watch(
   { deep: true }
 )
 
-// Register custom node types
-// Note: dateTimeConnector nodes are not rendered - they only exist as edge labels
 const nodeTypes = {
   trigger: TriggerNode,
   sendMessage: SendMessageNode,
@@ -194,9 +173,6 @@ const nodeTypes = {
   businessHours: BusinessHoursNode,
 }
 
-// Computed nodes and edges from store
-// Add selected state to nodes
-// Note: keyboardFocused is handled separately via CSS class to avoid triggering edge recalculation
 const nodes = computed({
   get: () => {
     return store.nodes.map((node) => ({
@@ -205,43 +181,33 @@ const nodes = computed({
     }))
   },
   set: (value: (VueFlowNode & { selected?: boolean })[]) => {
-    // Remove selected property before comparing
     const nodesWithoutSelected = value.map(({ selected, ...node }) => node)
     
-    // Check if this is only a selection change by comparing node data
-    // We need to check if nodes are the same except for selection state
     if (nodesWithoutSelected.length !== store.nodes.length) {
-      // Node count changed, update store
       store.setNodes(nodesWithoutSelected)
       return
     }
     
-    // Check if any node actually changed (position, data, etc.)
     const hasRealChanges = nodesWithoutSelected.some((newNode) => {
       const oldNode = store.nodes.find((n) => String(n.id) === String(newNode.id))
-      if (!oldNode) return true // New node
+      if (!oldNode) return true
       
-      // Check if position changed (this is handled by onNodesChange, but we still need to sync)
       if (oldNode.position.x !== newNode.position.x || oldNode.position.y !== newNode.position.y) {
-        return true // Position change
+        return true
       }
       
-      // Check if data changed (deep comparison)
       const oldDataStr = JSON.stringify(oldNode.data)
       const newDataStr = JSON.stringify(newNode.data)
       if (oldDataStr !== newDataStr) {
-        return true // Data change
+        return true
       }
       
-      return false // No change
+      return false
     })
     
-    // Only update store if there are real changes (not just selection state)
-    // Position changes are also handled by onNodesChange, but we sync here too for consistency
     if (hasRealChanges) {
       store.setNodes(nodesWithoutSelected)
     }
-    // If it's only a selection change, we ignore it - Vue Flow manages selection internally
   },
 })
 
@@ -250,38 +216,28 @@ const edges = computed({
   set: (value: VueFlowEdge[]) => store.setEdges(value),
 })
 
-// Handle node position changes (dragging)
 const onNodesChange = (changes: NodeChange[]) => {
   changes.forEach((change) => {
     if (change.type === 'position' && 'dragging' in change && change.dragging === false && 'position' in change) {
-      // Node was dragged and released
       store.updateNodePosition(change.id, change.position)
-      // History will be saved by the watcher
     }
   })
 }
 
-// Handle node click - open drawer
 const onNodeClick = (event: { node: VueFlowNode }) => {
   const node = event.node
-  // Skip connector nodes (display only)
   if (node.type === 'dateTimeConnector') {
     return
   }
   
-  // Clear keyboard focus when clicking with mouse
   keyboardNav.focusedNodeId.value = null
-  
-  // Navigate to node details drawer
   router.push(`/node/${node.id}`)
 }
 
-// Close drawer
 const closeDrawer = () => {
   router.push('/')
 }
 
-// Watch for route changes to handle drawer opening
 watch(
   () => router.currentRoute.value.params.id,
   (nodeId) => {
@@ -289,22 +245,18 @@ watch(
       store.setSelectedNode(nodeId as string)
     } else {
       store.clearSelectedNode()
-      // Clear keyboard focus when drawer closes
       keyboardNav.focusedNodeId.value = null
     }
   },
   { immediate: true }
 )
 
-// Create node modal handlers
 const closeCreateModal = () => {
   isCreateModalOpen.value = false
   selectedParentId.value = null
 }
 
 const handleNodeCreated = () => {
-  // Node was created successfully
-  // The mutation already updates the store, so nodes will refresh automatically
   closeCreateModal()
 }
 </script>

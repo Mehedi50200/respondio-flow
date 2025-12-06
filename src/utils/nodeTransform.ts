@@ -31,9 +31,7 @@ export function calculateNewNodePosition(
   const horizontalSpacing = 300
   const baseX = 400
 
-  // Find parent node's current position from Vue Flow nodes
   const findParentPosition = (parentId: string | number): Position | null => {
-    // Check if parent is in Vue Flow nodes
     const parentVueFlowNode = existingVueFlowNodes.find(
       (n) => String(n.id) === String(parentId)
     )
@@ -41,13 +39,10 @@ export function calculateNewNodePosition(
       return parentVueFlowNode.position
     }
 
-    // If parent not found, check if it's a connector
-    // Connectors are not in Vue Flow nodes, so find the connector's parent (Business Hours)
     const connectorPayload = allPayloadNodes.find(
       (n) => String(n.id) === String(parentId) && n.type === 'dateTimeConnector'
     )
     if (connectorPayload) {
-      // Find the connector's parent (Business Hours node)
       const businessHoursVueFlowNode = existingVueFlowNodes.find(
         (n) => String(n.id) === String(connectorPayload.parentId)
       )
@@ -59,14 +54,12 @@ export function calculateNewNodePosition(
     return null
   }
 
-  // Root node
   if (newNode.parentId === -1) {
     return { x: baseX, y: 100 }
   }
 
   const parentPosition = findParentPosition(newNode.parentId)
   if (!parentPosition) {
-    // Fallback: position below last node
     const maxY = existingVueFlowNodes.reduce(
       (max, node) => Math.max(max, node.position.y),
       100
@@ -74,38 +67,32 @@ export function calculateNewNodePosition(
     return { x: baseX, y: maxY + verticalSpacing }
   }
 
-  // Check if parent is a connector
   const connectorParent = allPayloadNodes.find(
     (n) => String(n.id) === String(newNode.parentId) && n.type === 'dateTimeConnector'
   )
 
   if (connectorParent) {
-    // This node's parent is a connector
     const isSuccess = connectorParent.data?.connectorType === 'success'
     const x = baseX + (isSuccess ? -horizontalSpacing : horizontalSpacing)
 
-    // Find all siblings (nodes with same parent connector) in Vue Flow nodes
     const siblingNodes = existingVueFlowNodes.filter((n) => {
       const originalData = n.data?.originalData
       const nodeParentId = originalData?.parentId ?? n.data?.parentId
       return String(nodeParentId) === String(newNode.parentId)
     })
 
-    // Calculate Y position based on siblings
     const y =
       parentPosition.y + verticalSpacing * 2 + siblingNodes.length * verticalSpacing
 
     return { x, y }
   }
 
-  // Regular child node - position below parent, accounting for existing siblings
   const siblingNodes = existingVueFlowNodes.filter((n) => {
     const originalData = n.data?.originalData
     const nodeParentId = originalData?.parentId ?? n.data?.parentId
     return String(nodeParentId) === String(newNode.parentId)
   })
 
-  // Calculate Y position: below parent, accounting for existing siblings
   const y = parentPosition.y + verticalSpacing + siblingNodes.length * verticalSpacing
 
   return { x: baseX, y }
@@ -134,7 +121,6 @@ export function calculateNodePosition(
       return positionCache.get(cacheKey)!
     }
 
-    // Root node
     if (targetNode.parentId === -1) {
       const pos = { x: baseX, y: baseY }
       positionCache.set(cacheKey, pos)
@@ -150,24 +136,18 @@ export function calculateNodePosition(
 
     const parentPos = getNodePosition(parent)
 
-    // Children of connectors (connectors are not nodes, but we need to handle their children)
-    // Find if parent is a connector by checking all nodes
     const connectorParent = allNodes.find((n) => String(n.id) === String(targetNode.parentId) && n.type === 'dateTimeConnector')
     
     if (connectorParent) {
       const isSuccess = connectorParent.data?.connectorType === 'success'
       const parentX = baseX + (isSuccess ? -horizontalSpacing : horizontalSpacing)
       
-      // Get all siblings with same parent (same connector)
       const siblings = allNodes.filter((n) => String(n.parentId) === String(targetNode.parentId))
       const siblingIndex = siblings.findIndex((n) => String(n.id) === String(targetNode.id))
       
-      // Get connector's parent position (Business Hours)
       const connectorGrandParent = allNodes.find((n) => String(n.id) === String(connectorParent.parentId))
       const connectorGrandParentPos = connectorGrandParent ? getNodePosition(connectorGrandParent) : parentPos
       
-      // Connector is at connectorGrandParentPos.y + verticalSpacing
-      // First child should be at connectorGrandParentPos.y + verticalSpacing * 2
       const pos = {
         x: parentX,
         y: connectorGrandParentPos.y + (verticalSpacing * 2) + (siblingIndex * verticalSpacing),
@@ -176,9 +156,7 @@ export function calculateNodePosition(
       return pos
     }
 
-    // Regular children - stack vertically
     const siblings = allNodes.filter((n) => String(n.parentId) === String(targetNode.parentId))
-    // Filter out connectors when counting regular siblings
     const regularSiblings = siblings.filter((n) => n.type !== 'dateTimeConnector')
     const siblingIndex = regularSiblings.findIndex((n) => String(n.id) === String(targetNode.id))
     
@@ -201,23 +179,17 @@ export function transformPayloadToNodes(payloadData: PayloadNode[]): VueFlowNode
     return []
   }
 
-  // Sort nodes: root first, then by parent-child relationships
-  // This ensures proper positioning order
   const sortedNodes = [...payloadData].sort((a, b) => {
-    // Root nodes first
     if (a.parentId === -1 && b.parentId !== -1) return -1
     if (a.parentId !== -1 && b.parentId === -1) return 1
     
-    // Same parent: maintain order
     if (String(a.parentId) === String(b.parentId)) {
       return 0
     }
     
-    // Sort by parentId to group siblings
     return String(a.parentId).localeCompare(String(b.parentId))
   })
 
-  // Map connectors for easy lookup
   const connectorMap = new Map<string | number, PayloadNode>()
   sortedNodes.forEach((node) => {
     if (node.type === 'dateTimeConnector') {
@@ -225,23 +197,19 @@ export function transformPayloadToNodes(payloadData: PayloadNode[]): VueFlowNode
     }
   })
 
-  // First pass: create nodes with basic structure
-  // Filter out connector nodes - they should only exist as edge labels
   const nodes = sortedNodes
     .filter((item) => item.type !== 'dateTimeConnector')
     .map((item, index) => {
       const position = calculateNodePosition(item, sortedNodes, index)
 
-      // For Business Hours nodes, store connectors as full objects in data
       const nodeData: any = {
         ...item.data,
         label: item.name || getNodeLabel(item),
         description: getNodeDescription(item),
-        parentId: item.parentId, // Store parentId for edge reconstruction
-        originalData: item, // Keep original data for reference
+        parentId: item.parentId,
+        originalData: item,
       }
 
-      // If this is a Business Hours node with connectors, store full connector objects
       if (item.type === 'dateTime' && item.data?.connectors && Array.isArray(item.data.connectors)) {
         const connectorObjects: PayloadNode[] = []
         item.data.connectors.forEach((connectorId: string | number) => {
@@ -250,7 +218,6 @@ export function transformPayloadToNodes(payloadData: PayloadNode[]): VueFlowNode
             connectorObjects.push(connector)
           }
         })
-        // Store connectors as full objects for edge building
         nodeData.connectorObjects = connectorObjects
       }
 
@@ -276,7 +243,6 @@ export function transformPayloadToEdges(payloadData: PayloadNode[]): VueFlowEdge
   const edges: VueFlowEdge[] = []
   const connectorMap = new Map<string | number, PayloadNode>()
 
-  // First, map connectors to their IDs
   payloadData.forEach((node) => {
     if (node.type === 'dateTimeConnector') {
       connectorMap.set(node.id, node)
@@ -284,12 +250,10 @@ export function transformPayloadToEdges(payloadData: PayloadNode[]): VueFlowEdge
   })
 
   payloadData.forEach((node) => {
-    // Skip root node (parentId === -1)
     if (node.parentId === -1) {
       return
     }
 
-    // Skip connector nodes themselves - we'll create edges for their children
     if (node.type === 'dateTimeConnector') {
       return
     }
@@ -297,7 +261,6 @@ export function transformPayloadToEdges(payloadData: PayloadNode[]): VueFlowEdge
     let sourceId = String(node.parentId)
     const targetId = String(node.id)
 
-    // Check if parent is a connector - if so, use connector's parent as source
     const connector = connectorMap.get(node.parentId)
     let edgeType: string = 'default'
     let label: string = ''
@@ -333,7 +296,6 @@ export function transformPayloadToEdges(payloadData: PayloadNode[]): VueFlowEdge
         ry: 6,
       }
       
-      // Add padding: [vertical, horizontal] - minimal vertical, more horizontal padding
       labelBgPadding = [2, 12]
       labelBgBorderRadius = 6
     }
@@ -356,10 +318,6 @@ export function transformPayloadToEdges(payloadData: PayloadNode[]): VueFlowEdge
   return edges
 }
 
-/**
- * Build edges from Vue Flow nodes
- * This function extracts parentId from Vue Flow node structure
- */
 export function buildEdgesFromVueFlowNodes(vueFlowNodes: VueFlowNode[]): VueFlowEdge[] {
   if (!Array.isArray(vueFlowNodes)) {
     return []
@@ -368,8 +326,6 @@ export function buildEdgesFromVueFlowNodes(vueFlowNodes: VueFlowNode[]): VueFlow
   const edges: VueFlowEdge[] = []
   const connectorMap = new Map<string | number, PayloadNode>()
 
-  // First, try to find connectors in originalData of nodes
-  // Connectors might be stored there if they were preserved
   vueFlowNodes.forEach((node) => {
     const originalData = node.data?.originalData
     if (originalData?.type === 'dateTimeConnector') {
@@ -377,10 +333,7 @@ export function buildEdgesFromVueFlowNodes(vueFlowNodes: VueFlowNode[]): VueFlow
     }
   })
   
-  // Extract connectors from Business Hours nodes
-  // Business Hours nodes now have connectorObjects stored in their data
   vueFlowNodes.forEach((node) => {
-    // Check if this node has connectorObjects stored (from transformPayloadToNodes)
     if (node.data?.connectorObjects && Array.isArray(node.data.connectorObjects)) {
       node.data.connectorObjects.forEach((connector: PayloadNode) => {
         if (connector.type === 'dateTimeConnector') {
@@ -389,7 +342,6 @@ export function buildEdgesFromVueFlowNodes(vueFlowNodes: VueFlowNode[]): VueFlow
       })
     }
     
-    // Fallback: try to extract from originalData if connectorObjects not available
     const originalData = node.data?.originalData
     if ((originalData?.type === 'dateTime' || node.type === 'businessHours') && node.data) {
       const connectors = originalData?.data?.connectors || node.data.connectors
@@ -398,7 +350,6 @@ export function buildEdgesFromVueFlowNodes(vueFlowNodes: VueFlowNode[]): VueFlow
       if (Array.isArray(connectors) && !node.data.connectorObjects) {
         connectors.forEach((connectorId: string | number) => {
           if (!connectorMap.has(connectorId)) {
-            // Try to find connector in other nodes' originalData
             let foundConnector: PayloadNode | null = null
             vueFlowNodes.forEach((otherNode) => {
               const otherOriginalData = otherNode.data?.originalData
@@ -407,7 +358,6 @@ export function buildEdgesFromVueFlowNodes(vueFlowNodes: VueFlowNode[]): VueFlow
               }
             })
             
-            // If not found, reconstruct connector from Business Hours node data
             if (!foundConnector) {
               const connectorIndex = connectors.indexOf(connectorId)
               const connectorType = connectorIndex === 0 ? 'success' : 'failure'
@@ -433,11 +383,9 @@ export function buildEdgesFromVueFlowNodes(vueFlowNodes: VueFlowNode[]): VueFlow
   })
 
   vueFlowNodes.forEach((node) => {
-    // Extract parentId from Vue Flow node structure
     const originalData = node.data?.originalData
     const parentId = originalData?.parentId ?? node.data?.parentId
 
-    // Skip root node (parentId === -1 or undefined/null)
     if (parentId === -1 || parentId === undefined || parentId === null) {
       return
     }
@@ -445,7 +393,6 @@ export function buildEdgesFromVueFlowNodes(vueFlowNodes: VueFlowNode[]): VueFlow
     let sourceId = String(parentId)
     const targetId = String(node.id)
 
-    // Check if parent is a connector - if so, use connector's parent as source
     const connector = connectorMap.get(parentId)
     let edgeType: string = 'default'
     let label: string = ''
@@ -454,7 +401,6 @@ export function buildEdgesFromVueFlowNodes(vueFlowNodes: VueFlowNode[]): VueFlow
     let labelBgStyle: { [key: string]: string | number } | undefined
 
     if (connector) {
-      // This node's parent is a connector, so edge goes from connector's parent to this node
       sourceId = String(connector.parentId)
       const connectorType = connector.data?.connectorType
       const isSuccess = connectorType === 'success'
@@ -465,14 +411,12 @@ export function buildEdgesFromVueFlowNodes(vueFlowNodes: VueFlowNode[]): VueFlow
         strokeWidth: 2,
       }
       
-      // Style the label text
       labelStyle = {
         fill: '#ffffff',
         fontWeight: 500,
         fontSize: 12,
       }
       
-      // Style the label background with rounded corners
       labelBgStyle = {
         fill: isSuccess ? '#10b981' : '#ef4444',
         rx: 6,
@@ -537,20 +481,16 @@ export function getNodeDescription(
   node: PayloadNode | VueFlowNode,
   maxLength: number = 50
 ): string {
-  // Check if it's a PayloadNode or VueFlowNode
   const isPayloadNode = 'parentId' in node && !('position' in node)
   
   let nodeData: any
   let nodeType: string
   
   if (isPayloadNode) {
-    // It's a PayloadNode
     nodeData = (node as PayloadNode).data
     nodeType = (node as PayloadNode).type
   } else {
-    // It's a VueFlowNode
     nodeData = (node as VueFlowNode).data
-    // Try to get type from originalData first, then from node type
     const originalData = nodeData?.originalData
     nodeType = originalData?.type || (node as VueFlowNode).type
   }
@@ -580,7 +520,6 @@ export function getNodeDescription(
       description = ''
   }
 
-  // Truncate if needed
   if (description.length > maxLength) {
     return description.substring(0, maxLength) + '...'
   }
@@ -603,7 +542,6 @@ export function createNewNode(nodeData: NodeCreationData): PayloadNode {
     data: getDefaultDataForType(type),
   }
 
-  // Add type-specific data
   switch (type) {
     case 'sendMessage':
       if (description) {
