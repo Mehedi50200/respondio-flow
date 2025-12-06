@@ -14,12 +14,19 @@
         <form @submit.prevent="handleSubmit" class="modal-form">
           <div class="form-group">
             <label for="node-type">Node Type *</label>
-            <select id="node-type" v-model="formData.type" required>
+            <select 
+              id="node-type" 
+              v-model="formData.type" 
+              required
+              @change="clearFieldError('type')"
+              :class="{ 'input-error': fieldErrors.type }"
+            >
               <option value="">Select a type</option>
               <option value="sendMessage">Send Message</option>
               <option value="addComment">Add Comment</option>
               <option value="businessHours">Business Hours</option>
             </select>
+            <span v-if="fieldErrors.type" class="field-error">{{ fieldErrors.type }}</span>
           </div>
 
           <div class="form-group">
@@ -30,8 +37,14 @@
               type="text"
               placeholder="Enter node title"
               required
+              minlength="1"
               maxlength="100"
+              @blur="validateTitle"
+              @input="clearFieldError('title')"
+              :class="{ 'input-error': fieldErrors.title }"
             />
+            <span v-if="fieldErrors.title" class="field-error">{{ fieldErrors.title }}</span>
+            <span v-else class="field-hint">Minimum 1 character, maximum 100 characters</span>
           </div>
 
           <div class="form-group">
@@ -42,7 +55,11 @@
               placeholder="Enter description"
               rows="4"
               maxlength="500"
+              @input="clearFieldError('description')"
+              :class="{ 'input-error': fieldErrors.description }"
             ></textarea>
+            <span v-if="fieldErrors.description" class="field-error">{{ fieldErrors.description }}</span>
+            <span v-else class="field-hint">{{ formData.description.length }}/500 characters</span>
           </div>
 
           <div v-if="formData.type === 'businessHours'" class="form-group">
@@ -119,6 +136,11 @@ const formData = ref<{
 
 const error = ref<string>('')
 const isSubmitting = ref(false)
+const fieldErrors = ref<{
+  type?: string
+  title?: string
+  description?: string
+}>({})
 
 const parentNodeLabel = computed(() => {
   if (!props.selectedParentId) return 'None (Root)'
@@ -140,14 +162,61 @@ const resetForm = () => {
     timezone: 'UTC',
   }
   error.value = ''
+  fieldErrors.value = {}
   isSubmitting.value = false
+}
+
+const validateTitle = () => {
+  const title = formData.value.title.trim()
+  if (!title) {
+    fieldErrors.value.title = 'Title is required'
+    return false
+  }
+  if (title.length < 1) {
+    fieldErrors.value.title = 'Title must be at least 1 character'
+    return false
+  }
+  if (title.length > 100) {
+    fieldErrors.value.title = 'Title must not exceed 100 characters'
+    return false
+  }
+  clearFieldError('title')
+  return true
+}
+
+const validateForm = (): boolean => {
+  fieldErrors.value = {}
+  let isValid = true
+
+  if (!formData.value.type) {
+    fieldErrors.value.type = 'Please select a node type'
+    isValid = false
+  }
+
+  if (!validateTitle()) {
+    isValid = false
+  }
+
+  const description = formData.value.description.trim()
+  if (description.length > 500) {
+    fieldErrors.value.description = 'Description must not exceed 500 characters'
+    isValid = false
+  }
+
+  return isValid
+}
+
+const clearFieldError = (field: keyof typeof fieldErrors.value) => {
+  if (fieldErrors.value[field]) {
+    delete fieldErrors.value[field]
+  }
 }
 
 const handleSubmit = async () => {
   error.value = ''
 
-  if (!formData.value.type || !formData.value.title.trim()) {
-    error.value = 'Please fill in all required fields'
+  if (!validateForm()) {
+    error.value = 'Please fix the errors above'
     return
   }
 
@@ -302,6 +371,33 @@ watch(() => props.isOpen, (isOpen) => {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.form-group input.input-error,
+.form-group textarea.input-error,
+.form-group select.input-error {
+  border-color: var(--color-error);
+}
+
+.form-group input.input-error:focus,
+.form-group textarea.input-error:focus,
+.form-group select.input-error:focus {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.field-error {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--color-error);
+}
+
+.field-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
 }
 
 .form-group textarea {

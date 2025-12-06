@@ -36,9 +36,15 @@
           <input
             v-model="editableTitle"
             @change="saveTitle"
+            @blur="validateTitle"
+            @input="clearFieldError('title')"
             class="form-input"
+            :class="{ 'input-error': fieldErrors.title }"
             placeholder="Enter node title..."
+            maxlength="100"
           />
+          <span v-if="fieldErrors.title" class="field-error">{{ fieldErrors.title }}</span>
+          <span v-else class="field-hint">{{ editableTitle.length }}/100 characters</span>
         </div>
         
         <!-- Description field only for Business Hours (shows help text) -->
@@ -55,6 +61,9 @@
 
         <!-- Business Hours Node -->
         <div v-if="node.type === 'businessHours'" class="node-config">
+          <div v-if="fieldErrors.businessHours" class="business-hours-error">
+            <span class="field-error">{{ fieldErrors.businessHours }}</span>
+          </div>
           <div class="business-hours-table">
             <div class="table-header">
               <div class="header-cell">
@@ -110,10 +119,20 @@
             <textarea
               v-model="messageText"
               class="message-textarea"
+              :class="{ 'input-error': fieldErrors.messageText }"
               rows="6"
               placeholder="Enter message text..."
               @change="updateMessage"
+              @input="clearFieldError('messageText')"
+              maxlength="1000"
             ></textarea>
+            <span v-if="fieldErrors.messageText" class="field-error">{{ fieldErrors.messageText }}</span>
+            <span v-else class="field-hint">
+              {{ messageText.length }}/1000 characters. 
+              <span v-if="!messageText.trim() && attachments.length === 0" class="field-warning">
+                Message text or attachment is recommended
+              </span>
+            </span>
           </div>
 
           <div class="form-group">
@@ -164,10 +183,15 @@
             <textarea
               v-model="commentText"
               class="message-textarea"
+              :class="{ 'input-error': fieldErrors.comment }"
               rows="6"
               placeholder="Enter comment..."
               @change="updateComment"
+              @input="clearFieldError('comment')"
+              maxlength="1000"
             ></textarea>
+            <span v-if="fieldErrors.comment" class="field-error">{{ fieldErrors.comment }}</span>
+            <span v-else class="field-hint">{{ commentText.length }}/1000 characters</span>
           </div>
         </div>
 
@@ -245,6 +269,14 @@ const editableDescription = ref('')
 // Delete confirmation
 const showDeleteConfirm = ref(false)
 
+// Field validation errors
+const fieldErrors = ref<{
+  title?: string
+  messageText?: string
+  comment?: string
+  businessHours?: string
+}>({})
+
 const daysOfWeek = [
   { key: 'mon', label: 'Mon' },
   { key: 'tue', label: 'Tue' },
@@ -306,9 +338,34 @@ const handleClose = () => {
   emit('close')
 }
 
+// Validation functions
+const validateTitle = (): boolean => {
+  const title = editableTitle.value.trim()
+  if (!title) {
+    fieldErrors.value.title = 'Title is required'
+    return false
+  }
+  if (title.length > 100) {
+    fieldErrors.value.title = 'Title must not exceed 100 characters'
+    return false
+  }
+  clearFieldError('title')
+  return true
+}
+
+const clearFieldError = (field: keyof typeof fieldErrors.value) => {
+  if (fieldErrors.value[field]) {
+    delete fieldErrors.value[field]
+  }
+}
+
 // Title and description editing
 const saveTitle = async () => {
   if (!node.value) return
+  
+  if (!validateTitle()) {
+    return
+  }
   
   if (editableTitle.value.trim() === '') {
     editableTitle.value = nodeTitle.value
@@ -366,6 +423,23 @@ const confirmDelete = async () => {
 
 const updateBusinessHours = async () => {
   if (!node.value) return
+  
+  // Validate time ranges
+  const invalidDays: string[] = []
+  daysOfWeek.forEach((day) => {
+    const start = businessHours.value[day.key].startTime
+    const end = businessHours.value[day.key].endTime
+    if (start && end && start >= end) {
+      invalidDays.push(day.label)
+    }
+  })
+
+  if (invalidDays.length > 0) {
+    fieldErrors.value.businessHours = `End time must be after start time for: ${invalidDays.join(', ')}`
+    return
+  }
+
+  clearFieldError('businessHours')
   
   const times = daysOfWeek.map((day) => ({
     day: day.key,
@@ -431,14 +505,30 @@ const handleFileUpload = async (event: Event) => {
   const file = target.files?.[0]
   if (!file) return
 
-  // Check if it's an image
+  // Validate file type
   if (!file.type.startsWith('image/')) {
-    alert('Please upload an image file')
+    fieldErrors.value.messageText = 'Please upload an image file (jpg, png, gif, webp, etc.)'
+    target.value = ''
     return
   }
 
+  // Validate file size (max 5MB)
+  const maxSize = 5 * 1024 * 1024 // 5MB in bytes
+  if (file.size > maxSize) {
+    fieldErrors.value.messageText = 'File size must be less than 5MB'
+    target.value = ''
+    return
+  }
+
+  // Clear any previous errors
+  clearFieldError('messageText')
+
   // Read file as data URL for preview
   const reader = new FileReader()
+  reader.onerror = () => {
+    fieldErrors.value.messageText = 'Failed to read file. Please try again.'
+    target.value = ''
+  }
   reader.onload = (e) => {
     const dataUrl = e.target?.result as string
     attachments.value.push({
@@ -1013,6 +1103,44 @@ watch(
   border-color: var(--color-input-border-focus);
   box-shadow: 0 0 0 3px var(--color-primary-light);
   background: var(--color-surface-elevated);
+}
+
+.form-input.input-error,
+.message-textarea.input-error {
+  border-color: var(--color-error);
+}
+
+.form-input.input-error:focus,
+.message-textarea.input-error:focus {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.field-error {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--color-error);
+  font-weight: 500;
+}
+
+.field-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+.field-warning {
+  color: var(--color-warning);
+}
+
+.business-hours-error {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-sm);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-md);
 }
 
 /* Delete Confirmation Modal */
