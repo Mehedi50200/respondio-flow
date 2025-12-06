@@ -19,7 +19,7 @@ const handleClick = () => {
 <style scoped>
 .node-add-button {
   position: absolute;
-  bottom: -30%;
+  bottom: -40px;
   left: 50%;
   transform: translateX(-50%);
   width: 28px;

@@ -3,13 +3,13 @@
     <div class="node-drawer" @click.stop>
       <div class="drawer-header">
         <div class="header-content">
-          <div class="node-icon-header" :class="nodeIconClass">
-            <component :is="nodeIcon" />
-          </div>
-          <div>
+          <div class="header-top-row">
+            <div class="node-icon-header" :class="nodeIconClass">
+              <img :src="nodeIconSrc" :alt="nodeTitle" />
+            </div>
             <h2 class="node-title-header">{{ nodeTitle }}</h2>
-            <p class="node-description-header">{{ nodeDescription }}</p>
           </div>
+          <p class="node-description-header">{{ nodeDescription }}</p>
         </div>
         <button class="close-button" @click="handleClose">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -21,10 +21,6 @@
       <div class="drawer-content">
         <!-- Business Hours Node -->
         <div v-if="node.type === 'businessHours'" class="node-config">
-          <p class="config-description">
-            Allows a branch to be created based on date & time conditions. Use it to set business hours or date range conditions.
-          </p>
-
           <div class="business-hours-table">
             <div class="table-header">
               <div class="header-cell">
@@ -127,6 +123,10 @@ import { ref, computed, watch } from 'vue'
 import { useNodesStore } from '@/stores'
 import { useUpdateNodeMutation } from '@/composables/useNodesQuery'
 import type { VueFlowNode } from '@/types'
+import triggerIcon from '@/assets/icons/trigger-icon.svg?url'
+import sendMessageIcon from '@/assets/icons/send-message-icon.svg?url'
+import addCommentIcon from '@/assets/icons/add-comment-icon.svg?url'
+import businessHoursIcon from '@/assets/icons/business-hours-icon.svg?url'
 
 interface Props {
   isOpen: boolean
@@ -149,13 +149,13 @@ const commentText = ref('')
 const triggerType = ref('conversationOpened')
 
 const daysOfWeek = [
-  { key: 'mon', label: 'Monday (Mon)' },
-  { key: 'tue', label: 'Tuesday (Tue)' },
-  { key: 'wed', label: 'Wednesday (Wed)' },
-  { key: 'thu', label: 'Thursday (Thu)' },
-  { key: 'fri', label: 'Friday (Fri)' },
-  { key: 'sat', label: 'Saturday (Sat)' },
-  { key: 'sun', label: 'Sunday (Sun)' },
+  { key: 'mon', label: 'Mon' },
+  { key: 'tue', label: 'Tue' },
+  { key: 'wed', label: 'Wed' },
+  { key: 'thu', label: 'Thu' },
+  { key: 'fri', label: 'Fri' },
+  { key: 'sat', label: 'Sat' },
+  { key: 'sun', label: 'Sun' },
 ]
 
 const node = computed(() => {
@@ -182,9 +182,20 @@ const nodeIconClass = computed(() => {
   }
 })
 
-const nodeIcon = computed(() => {
-  // Return appropriate icon component based on node type
-  return 'div' // Placeholder
+const nodeIconSrc = computed(() => {
+  const type = node.value?.type || ''
+  switch (type) {
+    case 'trigger':
+      return triggerIcon
+    case 'sendMessage':
+      return sendMessageIcon
+    case 'addComment':
+      return addCommentIcon
+    case 'businessHours':
+      return businessHoursIcon
+    default:
+      return ''
+  }
 })
 
 const handleClose = () => {
@@ -350,19 +361,31 @@ watch(
 
 .header-content {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  flex-direction: column;
+  gap: 8px;
   flex: 1;
 }
 
+.header-top-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .node-icon-header {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.node-icon-header img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
 }
 
 .node-icon-header.icon-trigger {
@@ -386,7 +409,7 @@ watch(
 }
 
 .node-title-header {
-  margin: 0 0 4px 0;
+  margin: 0;
   font-size: 18px;
   font-weight: 600;
   color: #111827;
@@ -424,12 +447,6 @@ watch(
   padding: 24px;
 }
 
-.config-description {
-  margin: 0 0 24px 0;
-  font-size: 14px;
-  color: #6b7280;
-  line-height: 1.5;
-}
 
 .business-hours-table {
   margin-bottom: 24px;
@@ -440,25 +457,25 @@ watch(
 
 .table-header {
   display: grid;
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: 80px 1fr;
   background: #f9fafb;
   border-bottom: 1px solid #e5e7eb;
 }
 
 .header-cell {
-  padding: 12px 16px;
-  font-size: 14px;
+  padding: 10px 12px;
+  font-size: 12px;
   font-weight: 600;
   color: #374151;
   text-align: left;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .header-cell svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   flex-shrink: 0;
 }
 
@@ -469,7 +486,7 @@ watch(
 
 .table-row {
   display: grid;
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: 80px 1fr;
   border-bottom: 1px solid #e5e7eb;
 }
 
@@ -478,8 +495,8 @@ watch(
 }
 
 .cell {
-  padding: 12px 16px;
-  font-size: 14px;
+  padding: 10px 12px;
+  font-size: 13px;
   color: #374151;
   display: flex;
   align-items: center;
@@ -487,33 +504,37 @@ watch(
 
 .day-cell {
   font-weight: 500;
+  min-width: 0;
 }
 
 .time-cell {
   justify-content: flex-start;
+  min-width: 0;
 }
 
 .time-inputs {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex: 1;
+  min-width: 0;
 }
 
 .time-inputs svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   flex-shrink: 0;
   color: #6b7280;
 }
 
 .time-input {
-  padding: 8px 12px;
+  padding: 6px 10px;
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 13px;
   font-family: inherit;
-  width: 120px;
+  width: 100px;
+  min-width: 0;
 }
 
 .time-input:focus {
@@ -523,8 +544,10 @@ watch(
 }
 
 .time-separator {
-  font-size: 14px;
+  font-size: 12px;
   color: #6b7280;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .timezone-selector {

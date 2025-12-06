@@ -1,28 +1,9 @@
 <template>
-  <div class="add-comment-node">
+  <div class="add-comment-node" :class="{ 'node-selected': selected }">
     <div class="node-header">
       <div class="node-icon-container">
         <div class="node-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              fill="none"
-            />
-            <polyline
-              points="14 2 14 8 20 8"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-            <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-            <polyline points="10 9 9 9 8 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+          <img :src="addCommentIcon" alt="Add Comment" />
         </div>
       </div>
       <div class="node-title">{{ data.label || 'Add Comment' }}</div>
@@ -36,6 +17,7 @@
 import { computed, inject } from 'vue'
 import type { NodeProps } from '@vue-flow/core'
 import NodeAddButton from '../NodeAddButton.vue'
+import addCommentIcon from '@/assets/icons/add-comment-icon.svg?url'
 
 interface AddCommentNodeData {
   label?: string
@@ -85,6 +67,21 @@ const truncatedDescription = computed(() => {
   border-color: var(--color-border-light);
 }
 
+.add-comment-node.node-selected {
+  border: 2px solid var(--color-primary);
+  box-shadow: 
+    0 0 0 4px var(--color-primary-light),
+    0 4px 12px rgba(0, 0, 0, 0.12),
+    0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .add-comment-node.node-selected {
+  box-shadow: 
+    0 0 0 4px rgba(96, 165, 250, 0.2),
+    0 4px 12px rgba(0, 0, 0, 0.12),
+    0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
 .node-header {
   display: flex;
   align-items: center;
@@ -120,9 +117,10 @@ const truncatedDescription = computed(() => {
   color: white;
 }
 
-.node-icon svg {
+.node-icon img {
   width: 100%;
   height: 100%;
+  object-fit: contain;
 }
 
 .node-title {

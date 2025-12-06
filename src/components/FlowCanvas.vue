@@ -89,9 +89,53 @@ const nodeTypes = {
 }
 
 // Computed nodes and edges from store
+// Add selected state to nodes based on store.selectedNodeId
 const nodes = computed({
-  get: () => store.nodes,
-  set: (value: VueFlowNode[]) => store.setNodes(value),
+  get: () => {
+    return store.nodes.map((node) => ({
+      ...node,
+      selected: String(node.id) === String(store.selectedNodeId),
+    }))
+  },
+  set: (value: (VueFlowNode & { selected?: boolean })[]) => {
+    // Remove selected property before comparing
+    const nodesWithoutSelected = value.map(({ selected, ...node }) => node)
+    
+    // Check if this is only a selection change by comparing node data
+    // We need to check if nodes are the same except for selection state
+    if (nodesWithoutSelected.length !== store.nodes.length) {
+      // Node count changed, update store
+      store.setNodes(nodesWithoutSelected)
+      return
+    }
+    
+    // Check if any node actually changed (position, data, etc.)
+    const hasRealChanges = nodesWithoutSelected.some((newNode) => {
+      const oldNode = store.nodes.find((n) => String(n.id) === String(newNode.id))
+      if (!oldNode) return true // New node
+      
+      // Check if position changed (this is handled by onNodesChange, but we still need to sync)
+      if (oldNode.position.x !== newNode.position.x || oldNode.position.y !== newNode.position.y) {
+        return true // Position change
+      }
+      
+      // Check if data changed (deep comparison)
+      const oldDataStr = JSON.stringify(oldNode.data)
+      const newDataStr = JSON.stringify(newNode.data)
+      if (oldDataStr !== newDataStr) {
+        return true // Data change
+      }
+      
+      return false // No change
+    })
+    
+    // Only update store if there are real changes (not just selection state)
+    // Position changes are also handled by onNodesChange, but we sync here too for consistency
+    if (hasRealChanges) {
+      store.setNodes(nodesWithoutSelected)
+    }
+    // If it's only a selection change, we ignore it - Vue Flow manages selection internally
+  },
 })
 
 const edges = computed({

@@ -1,15 +1,9 @@
 <template>
-  <div class="business-hours-node">
+  <div class="business-hours-node" :class="{ 'node-selected': selected }">
     <div class="node-header">
       <div class="node-icon-container">
         <div class="node-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2" />
-            <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-            <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-            <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-            <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-          </svg>
+          <img :src="businessHoursIcon" alt="Business Hours" />
         </div>
       </div>
       <div class="node-title">{{ data.label || 'Business Hours' }}</div>
@@ -23,6 +17,7 @@
 import { computed, inject } from 'vue'
 import type { NodeProps } from '@vue-flow/core'
 import NodeAddButton from '../NodeAddButton.vue'
+import businessHoursIcon from '@/assets/icons/business-hours-icon.svg?url'
 
 interface BusinessHoursNodeData {
   label?: string
@@ -70,6 +65,21 @@ const timezone = computed(() => props.data.timezone || 'UTC')
   border-color: var(--color-border-light);
 }
 
+.business-hours-node.node-selected {
+  border: 2px solid var(--color-primary);
+  box-shadow: 
+    0 0 0 4px var(--color-primary-light),
+    0 4px 12px rgba(0, 0, 0, 0.12),
+    0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .business-hours-node.node-selected {
+  box-shadow: 
+    0 0 0 4px rgba(96, 165, 250, 0.2),
+    0 4px 12px rgba(0, 0, 0, 0.12),
+    0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
 .node-header {
   display: flex;
   align-items: center;
@@ -105,9 +115,10 @@ const timezone = computed(() => props.data.timezone || 'UTC')
   color: white;
 }
 
-.node-icon svg {
+.node-icon img {
   width: 100%;
   height: 100%;
+  object-fit: contain;
 }
 
 .node-title {

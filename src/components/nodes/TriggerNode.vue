@@ -1,18 +1,9 @@
 <template>
-  <div class="trigger-node">
+  <div class="trigger-node" :class="{ 'node-selected': selected }">
     <div class="node-header">
       <div class="node-icon-container">
         <div class="node-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              fill="currentColor"
-            />
-          </svg>
+          <img :src="triggerIcon" alt="Trigger" />
         </div>
       </div>
       <div class="node-title">{{ data.label || 'Trigger' }}</div>
@@ -26,6 +17,7 @@
 import { inject } from 'vue'
 import type { NodeProps } from '@vue-flow/core'
 import NodeAddButton from '../NodeAddButton.vue'
+import triggerIcon from '@/assets/icons/trigger-icon.svg?url'
 
 interface TriggerNodeData {
   label?: string
@@ -69,6 +61,21 @@ const handleAddClick = () => {
   border-color: var(--color-border-light);
 }
 
+.trigger-node.node-selected {
+  border: 2px solid var(--color-primary);
+  box-shadow: 
+    0 0 0 4px var(--color-primary-light),
+    0 4px 12px rgba(0, 0, 0, 0.12),
+    0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .trigger-node.node-selected {
+  box-shadow: 
+    0 0 0 4px rgba(96, 165, 250, 0.2),
+    0 4px 12px rgba(0, 0, 0, 0.12),
+    0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
 .node-header {
   display: flex;
   align-items: center;
@@ -104,9 +111,10 @@ const handleAddClick = () => {
   color: white;
 }
 
-.node-icon svg {
+.node-icon img {
   width: 100%;
   height: 100%;
+  object-fit: contain;
 }
 
 .node-title {
