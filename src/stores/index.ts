@@ -70,21 +70,46 @@ export const useNodesStore = defineStore('nodes', {
     updateNode(nodeId: string | number, updates: Partial<VueFlowNode>): void {
       const index = this.nodes.findIndex((n) => String(n.id) === String(nodeId))
       if (index !== -1) {
+        const currentNode = this.nodes[index]
+        const currentData = currentNode.data || {}
+        const updateData = updates.data || {}
+        
+        // Preserve originalData and parentId - these are critical for edge building
+        const originalData = currentData.originalData
+        const parentId = currentData.parentId
+        
         // Deep merge updates
         this.nodes[index] = {
-          ...this.nodes[index],
+          ...currentNode,
           ...updates,
           data: {
-            ...this.nodes[index].data,
-            ...(updates.data || {}),
+            ...currentData,
+            ...updateData,
+            // Always preserve originalData and parentId
+            originalData,
+            parentId,
           },
         }
 
-        // Update originalData if it exists
-        if (this.nodes[index].data.originalData) {
+        // Update originalData.data if it exists (for payload structure)
+        if (originalData && updateData) {
+          // Only update payload fields, not Vue Flow fields
+          const payloadFields: Record<string, any> = {}
+          if ('type' in updateData) payloadFields.type = updateData.type
+          if ('payload' in updateData) payloadFields.payload = updateData.payload
+          if ('comment' in updateData) payloadFields.comment = updateData.comment
+          if ('times' in updateData) payloadFields.times = updateData.times
+          if ('timezone' in updateData) payloadFields.timezone = updateData.timezone
+          if ('action' in updateData) payloadFields.action = updateData.action
+          if ('oncePerContact' in updateData) payloadFields.oncePerContact = updateData.oncePerContact
+          
           this.nodes[index].data.originalData = {
-            ...this.nodes[index].data.originalData,
-            ...(updates.data || {}),
+            ...originalData,
+            parentId: originalData.parentId, // Preserve parentId at root level
+            data: {
+              ...originalData.data,
+              ...payloadFields,
+            },
           } as any
         }
       }

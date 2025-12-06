@@ -8,13 +8,13 @@
       </div>
       <div class="node-title">{{ data.label || 'Trigger' }}</div>
     </div>
-    <div class="node-description">{{ data.description || 'Conversation Opened' }}</div>
+    <div class="node-description">{{ triggerDescription }}</div>
     <NodeAddButton @click="handleAddClick" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { inject } from 'vue'
+import { computed, inject } from 'vue'
 import type { NodeProps } from '@vue-flow/core'
 import NodeAddButton from '../NodeAddButton.vue'
 import triggerIcon from '@/assets/icons/trigger-icon.svg?url'
@@ -22,9 +22,19 @@ import triggerIcon from '@/assets/icons/trigger-icon.svg?url'
 interface TriggerNodeData {
   label?: string
   description?: string
+  type?: string
 }
 
 const props = defineProps<NodeProps<TriggerNodeData>>()
+
+const triggerDescription = computed(() => {
+  // Use description if available, otherwise derive from type
+  if (props.data.description) {
+    return props.data.description
+  }
+  const triggerType = props.data.type || 'conversationOpened'
+  return triggerType === 'messageReceived' ? 'Message Received' : 'Conversation Opened'
+})
 
 const addNodeHandler = inject<(nodeId: string) => void>('addNodeHandler')
 

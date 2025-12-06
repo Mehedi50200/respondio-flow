@@ -122,7 +122,6 @@
 import { ref, computed, watch } from 'vue'
 import { useNodesStore } from '@/stores'
 import { useUpdateNodeMutation } from '@/composables/useNodesQuery'
-import type { VueFlowNode } from '@/types'
 import triggerIcon from '@/assets/icons/trigger-icon.svg?url'
 import sendMessageIcon from '@/assets/icons/send-message-icon.svg?url'
 import addCommentIcon from '@/assets/icons/add-comment-icon.svg?url'
@@ -263,12 +262,17 @@ const updateComment = async () => {
 const updateTrigger = async () => {
   if (!node.value) return
   
+  const description = triggerType.value === 'messageReceived' 
+    ? 'Message Received' 
+    : 'Conversation Opened'
+  
   await updateNodeMutation.mutateAsync({
     nodeId: node.value.id,
     updates: {
       data: {
         ...node.value.data,
         type: triggerType.value,
+        description,
       },
     },
   })
@@ -285,7 +289,7 @@ watch(
       const timesMap: Record<string, { startTime: string; endTime: string }> = {}
       
       daysOfWeek.forEach((day) => {
-        const dayTime = times.find((t) => t.day === day.key)
+        const dayTime = times.find((t: { day: string; startTime: string; endTime: string }) => t.day === day.key)
         timesMap[day.key] = {
           startTime: dayTime?.startTime || '09:00',
           endTime: dayTime?.endTime || '17:00',

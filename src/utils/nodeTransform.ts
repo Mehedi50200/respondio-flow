@@ -354,7 +354,8 @@ export function getNodeDescription(
       description = `Business Hours - ${nodeData.timezone || 'UTC'}`
       break
     case 'trigger':
-      description = 'Conversation Opened' // nodeData.type || ''
+      const triggerType = nodeData.type || 'conversationOpened'
+      description = triggerType === 'messageReceived' ? 'Message Received' : 'Conversation Opened'
       break
     default:
       description = ''
