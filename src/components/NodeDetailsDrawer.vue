@@ -227,6 +227,7 @@ import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useNodesStore } from '@/stores'
 import { useUpdateNodeMutation, useDeleteNodeMutation } from '@/composables/useNodesQuery'
+import { useHistory } from '@/composables/useHistory'
 import triggerIcon from '@/assets/icons/trigger-icon.svg?url'
 import sendMessageIcon from '@/assets/icons/send-message-icon.svg?url'
 import addCommentIcon from '@/assets/icons/add-comment-icon.svg?url'
@@ -254,6 +255,7 @@ const router = useRouter()
 const store = useNodesStore()
 const updateNodeMutation = useUpdateNodeMutation()
 const deleteNodeMutation = useDeleteNodeMutation()
+const { saveState } = useHistory()
 
 const businessHours = ref<Record<string, { startTime: string; endTime: string }>>({})
 const timezone = ref('UTC')
@@ -381,6 +383,9 @@ const saveTitle = async () => {
       },
     },
   })
+  
+  // Save state to history after edit
+  saveState()
 }
 
 const saveDescription = async () => {
@@ -395,6 +400,9 @@ const saveDescription = async () => {
       },
     },
   })
+  
+  // Save state to history after edit
+  saveState()
 }
 
 // Delete functionality
@@ -412,6 +420,10 @@ const confirmDelete = async () => {
   
   try {
     await deleteNodeMutation.mutateAsync(node.value.id)
+    
+    // Save state to history after deletion
+    saveState()
+    
     showDeleteConfirm.value = false
     // Navigate back to canvas after deletion
     router.push('/')
@@ -457,6 +469,9 @@ const updateBusinessHours = async () => {
       },
     },
   })
+  
+  // Save state to history after edit
+  saveState()
 }
 
 const updateTimezone = async () => {
@@ -488,6 +503,9 @@ const updateMessage = async () => {
       },
     },
   })
+  
+  // Save state to history after edit
+  saveState()
 }
 
 // Attachment handling
@@ -571,6 +589,9 @@ const updateComment = async () => {
       },
     },
   })
+  
+  // Save state to history after edit
+  saveState()
 }
 
 const updateTrigger = async () => {
@@ -590,6 +611,9 @@ const updateTrigger = async () => {
       },
     },
   })
+  
+  // Save state to history after edit
+  saveState()
 }
 
 // Initialize form data when node changes

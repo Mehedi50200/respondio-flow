@@ -103,6 +103,7 @@
 import { ref, computed, watch } from 'vue'
 import { useNodesStore } from '@/stores'
 import { useCreateNodeMutation } from '@/composables/useNodesQuery'
+import { useHistory } from '@/composables/useHistory'
 import type { NodeCreationData } from '@/types'
 
 interface Props {
@@ -121,6 +122,7 @@ const emit = defineEmits<{
 
 const store = useNodesStore()
 const createNodeMutation = useCreateNodeMutation()
+const { saveState } = useHistory()
 
 const formData = ref<{
   type: NodeCreationData['type'] | ''
@@ -236,6 +238,9 @@ const handleSubmit = async () => {
     }
 
     await createNodeMutation.mutateAsync(nodeData)
+    
+    // Save state to history after creation
+    saveState()
     
     resetForm()
     emit('created')

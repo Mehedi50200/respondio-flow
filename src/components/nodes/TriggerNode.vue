@@ -1,5 +1,12 @@
 <template>
-  <div class="trigger-node node-base" :class="{ 'node-selected': selected }">
+  <div 
+    class="trigger-node node-base" 
+    :class="{ 
+      'node-selected': selected,
+      'node-keyboard-focused': keyboardFocused 
+    }"
+    :data-node-id="id"
+  >
     <div class="node-header">
       <div class="node-icon-container">
         <div class="node-icon">
@@ -14,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject } from 'vue'
+import { computed, inject, ref } from 'vue'
 import type { NodeProps } from '@vue-flow/core'
 import NodeAddButton from '../NodeAddButton.vue'
 import triggerIcon from '@/assets/icons/trigger-icon.svg?url'
@@ -26,6 +33,12 @@ interface TriggerNodeData {
 }
 
 const props = defineProps<NodeProps<TriggerNodeData>>()
+
+// Get keyboard focused node ID from parent
+const keyboardFocusedNodeId = inject<{ value: string | number | null }>('keyboardFocusedNodeId', ref(null))
+const keyboardFocused = computed(() => {
+  return keyboardFocusedNodeId && String(props.id) === String(keyboardFocusedNodeId.value)
+})
 
 const triggerDescription = computed(() => {
   // Use description if available, otherwise derive from type

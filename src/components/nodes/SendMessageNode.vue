@@ -1,5 +1,11 @@
 <template>
-  <div class="send-message-node node-base" :class="{ 'node-selected': selected }">
+  <div 
+    class="send-message-node node-base" 
+    :class="{ 
+      'node-selected': selected,
+      'node-keyboard-focused': keyboardFocused 
+    }"
+  >
     <div class="node-header">
       <div class="node-icon-container">
         <div class="node-icon">
@@ -14,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject } from 'vue'
+import { computed, inject, ref } from 'vue'
 import type { NodeProps } from '@vue-flow/core'
 import NodeAddButton from '../NodeAddButton.vue'
 import sendMessageIcon from '@/assets/icons/send-message-icon.svg?url'
@@ -26,6 +32,12 @@ interface SendMessageNodeData {
 }
 
 const props = defineProps<NodeProps<SendMessageNodeData>>()
+
+// Get keyboard focused node ID from parent
+const keyboardFocusedNodeId = inject<{ value: string | number | null }>('keyboardFocusedNodeId', ref(null))
+const keyboardFocused = computed(() => {
+  return keyboardFocusedNodeId && String(props.id) === String(keyboardFocusedNodeId.value)
+})
 
 const addNodeHandler = inject<(nodeId: string) => void>('addNodeHandler')
 

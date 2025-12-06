@@ -14,6 +14,23 @@
         <Background :pattern-color="patternColor" :gap="16" />
         <Controls />
       </VueFlow>
+      
+      <!-- Keyboard Shortcuts Info -->
+      <div class="keyboard-shortcuts" v-if="!isDrawerOpen">
+        <div class="shortcuts-title">Keyboard Shortcuts</div>
+        <div class="shortcut-item">
+          <kbd>↑</kbd><kbd>↓</kbd> Navigate nodes
+        </div>
+        <div class="shortcut-item">
+          <kbd>Enter</kbd> Open node details
+        </div>
+        <div class="shortcut-item">
+          <kbd>Ctrl</kbd>+<kbd>Z</kbd> Undo
+        </div>
+        <div class="shortcut-item">
+          <kbd>Ctrl</kbd>+<kbd>Y</kbd> Redo
+        </div>
+      </div>
     </div>
     
     <NodeDetailsDrawer
@@ -34,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch, ref, provide } from 'vue'
+import { computed, watch, ref, provide, onMounted, onUnmounted } from 'vue'
 import { VueFlow, type NodeChange } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { Controls } from '@vue-flow/controls'
@@ -42,6 +59,8 @@ import { useNodesStore } from '@/stores'
 import { useNodesQuery } from '@/composables/useNodesQuery'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
+import { useHistory } from '@/composables/useHistory'
+import { useKeyboardNavigation } from '@/composables/useKeyboardNavigation'
 import type { VueFlowNode, VueFlowEdge } from '@/types'
 
 // Import custom node components
@@ -58,6 +77,49 @@ import ThemeToggle from './ThemeToggle.vue'
 const router = useRouter()
 const store = useNodesStore()
 const { theme } = useTheme()
+const { canUndo, canRedo, undo, redo, saveState, initHistory } = useHistory()
+const keyboardNav = useKeyboardNavigation()
+
+// Handle undo/redo keyboard shortcuts
+const handleUndoRedo = (event: KeyboardEvent) => {
+  // Don't handle if typing in input/textarea
+  const target = event.target as HTMLElement
+  if (
+    target.tagName === 'INPUT' ||
+    target.tagName === 'TEXTAREA' ||
+    target.isContentEditable
+  ) {
+    return
+  }
+
+  if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
+    event.preventDefault()
+    if (canUndo.value) {
+      undo()
+    }
+  } else if ((event.ctrlKey || event.metaKey) && (event.key === 'y' || (event.key === 'z' && event.shiftKey))) {
+    event.preventDefault()
+    if (canRedo.value) {
+      redo()
+    }
+  }
+}
+
+// Combine keyboard handlers
+const combinedKeyHandler = (event: KeyboardEvent) => {
+  handleUndoRedo(event)
+  if (keyboardNav.handleKeyDown) {
+    keyboardNav.handleKeyDown(event)
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', combinedKeyHandler)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', combinedKeyHandler)
+})
 
 const isCreateModalOpen = ref(false)
 const selectedParentId = ref<string | number | null>(null)
@@ -76,8 +138,18 @@ const handleAddNode = (nodeId: string) => {
 }
 provide('addNodeHandler', handleAddNode)
 
+// Provide keyboard focused node ID to all nodes
+provide('keyboardFocusedNodeId', keyboardNav.focusedNodeId)
+
 // Fetch nodes data (triggers query and updates store)
-useNodesQuery()
+const { data: nodesData } = useNodesQuery()
+
+// Initialize history when nodes are loaded
+watch(nodesData, (data) => {
+  if (data?.nodes) {
+    initHistory()
+  }
+}, { immediate: true })
 
 // Register custom node types
 // Note: dateTimeConnector nodes are not rendered - they only exist as edge labels
@@ -89,7 +161,8 @@ const nodeTypes = {
 }
 
 // Computed nodes and edges from store
-// Add selected state to nodes based on store.selectedNodeId
+// Add selected state to nodes
+// Note: keyboardFocused is handled separately via CSS class to avoid triggering edge recalculation
 const nodes = computed({
   get: () => {
     return store.nodes.map((node) => ({
@@ -132,7 +205,7 @@ const nodes = computed({
     // Only update store if there are real changes (not just selection state)
     // Position changes are also handled by onNodesChange, but we sync here too for consistency
     if (hasRealChanges) {
-    store.setNodes(nodesWithoutSelected)
+      store.setNodes(nodesWithoutSelected)
     }
     // If it's only a selection change, we ignore it - Vue Flow manages selection internally
   },
@@ -145,12 +218,19 @@ const edges = computed({
 
 // Handle node position changes (dragging)
 const onNodesChange = (changes: NodeChange[]) => {
+  let positionChanged = false
   changes.forEach((change) => {
     if (change.type === 'position' && 'dragging' in change && change.dragging === false && 'position' in change) {
       // Node was dragged and released
       store.updateNodePosition(change.id, change.position)
+      positionChanged = true
     }
   })
+  
+  // Save state to history after position change
+  if (positionChanged) {
+    saveState()
+  }
 }
 
 // Handle node click - open drawer
@@ -160,6 +240,9 @@ const onNodeClick = (event: { node: VueFlowNode }) => {
   if (node.type === 'dateTimeConnector') {
     return
   }
+  
+  // Clear keyboard focus when clicking with mouse
+  keyboardNav.focusedNodeId.value = null
   
   // Navigate to node details drawer
   router.push(`/node/${node.id}`)
@@ -178,6 +261,8 @@ watch(
       store.setSelectedNode(nodeId as string)
     } else {
       store.clearSelectedNode()
+      // Clear keyboard focus when drawer closes
+      keyboardNav.focusedNodeId.value = null
     }
   },
   { immediate: true }
@@ -212,6 +297,55 @@ const handleNodeCreated = () => {
 .canvas-wrapper {
   flex: 1;
   position: relative;
+}
+
+.keyboard-shortcuts {
+  position: fixed;
+  bottom: var(--spacing-md);
+  right: var(--spacing-md);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  max-width: 200px;
+  transition: opacity var(--transition-base);
+}
+
+.keyboard-shortcuts:hover {
+  opacity: 0.9;
+}
+
+.shortcuts-title {
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-text-primary);
+  font-size: 13px;
+}
+
+.shortcut-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-xs);
+}
+
+.shortcut-item:last-child {
+  margin-bottom: 0;
+}
+
+kbd {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  font-size: 11px;
+  font-family: monospace;
+  color: var(--color-text-primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* Edge label styling - Vue Flow uses SVG for labels */
