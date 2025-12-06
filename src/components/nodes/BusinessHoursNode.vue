@@ -1,18 +1,20 @@
 <template>
   <div class="business-hours-node">
-    <div class="node-icon">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2" />
-        <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-        <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-        <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-        <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-      </svg>
-    </div>
-    <div class="node-content">
+    <div class="node-header">
+      <div class="node-icon-container">
+        <div class="node-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2" />
+            <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </div>
+      </div>
       <div class="node-title">{{ data.label || 'Business Hours' }}</div>
-      <div class="node-description">{{ data.description || `Business Hours - ${timezone}` }}</div>
     </div>
+    <div class="node-description">{{ data.description || `Business Hours - ${timezone}` }}</div>
     <NodeAddButton @click="handleAddClick" />
   </div>
 </template>
@@ -47,69 +49,86 @@ const timezone = computed(() => props.data.timezone || 'UTC')
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 18px 20px;
-  background: linear-gradient(135deg, var(--color-node-business-hours) 0%, color-mix(in srgb, var(--color-node-business-hours) 95%, black) 100%);
-  color: var(--color-text-inverse);
-  border-radius: 14px;
+  background: var(--color-surface-elevated);
+  color: var(--color-text-primary);
+  border-radius: 12px;
   width: 240px;
   box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.12),
-    0 1px 3px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--color-border);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   overflow: visible;
-  backdrop-filter: blur(10px);
 }
 
 .business-hours-node:hover {
-  transform: translateY(-3px) scale(1.01);
+  transform: translateY(-2px);
   box-shadow: 
-    0 8px 24px rgba(0, 0, 0, 0.16),
-    0 4px 8px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.25);
+    0 4px 12px rgba(0, 0, 0, 0.12),
+    0 2px 4px rgba(0, 0, 0, 0.08);
+  border-color: var(--color-border-light);
+}
+
+.node-header {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--color-surface-elevated);
+  border-radius: 12px 12px 0 0;
+  padding: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .node-header {
+  border-bottom-color: rgba(0, 0, 0, 0.3);
+}
+
+.node-icon-container {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-node-business-hours);
+  border-radius: 6px;
+  margin-right: 12px;
 }
 
 .node-icon {
-  flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  margin-bottom: 12px;
-  width: 32px;
-  height: 32px;
-  opacity: 1;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: white;
 }
 
 .node-icon svg {
   width: 100%;
   height: 100%;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
-}
-
-.node-content {
-  flex: 1;
-  min-width: 0;
 }
 
 .node-title {
+  flex: 1;
   font-weight: 600;
-  font-size: 15px;
-  margin-bottom: 6px;
+  font-size: 14px;
   line-height: 1.4;
   word-wrap: break-word;
   letter-spacing: -0.01em;
-  opacity: 1;
+  color: var(--color-text-primary);
 }
 
 .node-description {
-  font-size: 12.5px;
-  opacity: 0.92;
-  line-height: 1.5;
+  padding: 12px;
+  font-size: 12px;
+  line-height: 1.4;
   word-wrap: break-word;
   font-weight: 400;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-elevated);
+  border-radius: 0 0 12px 12px;
 }
 </style>
 

@@ -7,10 +7,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { NodeProps } from '@vue-flow/core'
+import type { PayloadNode } from '@/types'
 
 interface DateTimeConnectorNodeData {
   connectorType?: 'success' | 'failure'
   label?: string
+  originalData?: PayloadNode
 }
 
 const props = defineProps<NodeProps<DateTimeConnectorNodeData>>()
