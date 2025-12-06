@@ -119,6 +119,11 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', combinedKeyHandler)
+  // Clean up save state timeout
+  if (saveStateTimeout) {
+    clearTimeout(saveStateTimeout)
+    saveStateTimeout = null
+  }
 })
 
 const isCreateModalOpen = ref(false)
@@ -144,12 +149,41 @@ provide('keyboardFocusedNodeId', keyboardNav.focusedNodeId)
 // Fetch nodes data (triggers query and updates store)
 const { data: nodesData } = useNodesQuery()
 
-// Initialize history when nodes are loaded
+// Initialize history when nodes are loaded (only once)
+let historyInitialized = false
 watch(nodesData, (data) => {
-  if (data?.nodes) {
-    initHistory()
+  if (data?.nodes && data.nodes.length > 0 && !historyInitialized) {
+    // Use nextTick to ensure store is updated
+    setTimeout(() => {
+      if (store.nodes.length > 0) {
+        initHistory()
+        historyInitialized = true
+      }
+    }, 100)
   }
 }, { immediate: true })
+
+// Watch for store changes and save to history (except during undo/redo)
+// Use a debounce to avoid saving on every single change
+let saveStateTimeout: ReturnType<typeof setTimeout> | null = null
+watch(
+  [() => store.nodes, () => store.edges],
+  () => {
+    // Only save if history is initialized
+    if (historyInitialized) {
+      // Clear any pending save
+      if (saveStateTimeout) {
+        clearTimeout(saveStateTimeout)
+      }
+      // Debounce saves to avoid duplicate saves during rapid changes
+      saveStateTimeout = setTimeout(() => {
+        saveState()
+        saveStateTimeout = null
+      }, 100)
+    }
+  },
+  { deep: true }
+)
 
 // Register custom node types
 // Note: dateTimeConnector nodes are not rendered - they only exist as edge labels
@@ -218,19 +252,13 @@ const edges = computed({
 
 // Handle node position changes (dragging)
 const onNodesChange = (changes: NodeChange[]) => {
-  let positionChanged = false
   changes.forEach((change) => {
     if (change.type === 'position' && 'dragging' in change && change.dragging === false && 'position' in change) {
       // Node was dragged and released
       store.updateNodePosition(change.id, change.position)
-      positionChanged = true
+      // History will be saved by the watcher
     }
   })
-  
-  // Save state to history after position change
-  if (positionChanged) {
-    saveState()
-  }
 }
 
 // Handle node click - open drawer
