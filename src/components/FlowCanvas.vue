@@ -1,5 +1,25 @@
 <template>
   <div class="flow-canvas-container">
+    <header 
+      class="app-header" 
+      :class="{ 'header-hidden': isHeaderHidden, 'header-visible': !isHeaderHidden }"
+      @mouseenter="handleMouseEnter"
+    >
+      <div class="header-content">
+        <div class="logo-section">
+          <div class="logo-wrapper">
+            <img src="/favicon.png" alt="Respond.io Logo" class="app-logo" />
+          </div>
+          <div class="title-section">
+            <h1 class="app-title">Respond.io</h1>
+            <span class="app-subtitle">Flow Chart</span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <ThemeToggle />
+        </div>
+      </div>
+    </header>
     <div class="canvas-wrapper">
       <VueFlow
         v-model:nodes="nodes"
@@ -45,8 +65,6 @@
       @close="closeCreateModal"
       @created="handleNodeCreated"
     />
-    
-    <ThemeToggle />
   </div>
 </template>
 
@@ -76,6 +94,10 @@ const store = useNodesStore()
 const { theme } = useTheme()
 const { canUndo, canRedo, undo, redo, saveState, initHistory } = useHistory()
 const keyboardNav = useKeyboardNavigation()
+
+const isHeaderHidden = ref(false)
+let hideTimeout: ReturnType<typeof setTimeout> | null = null
+let showTimeout: ReturnType<typeof setTimeout> | null = null
 
 const handleUndoRedo = (event: KeyboardEvent) => {
   const target = event.target as HTMLElement
@@ -107,15 +129,69 @@ const combinedKeyHandler = (event: KeyboardEvent) => {
   }
 }
 
+const handleMouseMove = (event: MouseEvent) => {
+  const mouseY = event.clientY
+  const headerHeight = 73
+  
+  if (hideTimeout) {
+    clearTimeout(hideTimeout)
+    hideTimeout = null
+  }
+  if (showTimeout) {
+    clearTimeout(showTimeout)
+    showTimeout = null
+  }
+
+  if (mouseY < headerHeight + 20) {
+    showTimeout = setTimeout(() => {
+      isHeaderHidden.value = false
+    }, 100)
+  } else if (mouseY > headerHeight + 50 && !isHeaderHidden.value) {
+    hideTimeout = setTimeout(() => {
+      isHeaderHidden.value = true
+    }, 2000)
+  }
+}
+
+const handleMouseEnter = () => {
+  if (hideTimeout) {
+    clearTimeout(hideTimeout)
+    hideTimeout = null
+  }
+  if (showTimeout) {
+    clearTimeout(showTimeout)
+    showTimeout = null
+  }
+  isHeaderHidden.value = false
+}
+
 onMounted(() => {
   window.addEventListener('keydown', combinedKeyHandler)
+  window.addEventListener('mousemove', handleMouseMove, { passive: true })
+  
+  setTimeout(() => {
+    if (!isHeaderHidden.value) {
+      hideTimeout = setTimeout(() => {
+        isHeaderHidden.value = true
+      }, 3000)
+    }
+  }, 2000)
 })
 
 onUnmounted(() => {
   window.removeEventListener('keydown', combinedKeyHandler)
+  window.removeEventListener('mousemove', handleMouseMove)
   if (saveStateTimeout) {
     clearTimeout(saveStateTimeout)
     saveStateTimeout = null
+  }
+  if (hideTimeout) {
+    clearTimeout(hideTimeout)
+    hideTimeout = null
+  }
+  if (showTimeout) {
+    clearTimeout(showTimeout)
+    showTimeout = null
   }
 })
 
@@ -271,12 +347,131 @@ const handleNodeCreated = () => {
   background: var(--color-surface);
   position: relative;
   display: flex;
+  flex-direction: column;
   transition: background-color var(--transition-base);
+}
+
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--color-surface-elevated);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--spacing-md) var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 1000;
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.app-header.header-hidden {
+  transform: translateY(-100%);
+}
+
+.app-header.header-visible {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .app-header {
+  background: rgba(31, 41, 55, 0.8);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  border-bottom-color: transparent;
+}
+
+[data-theme="dark"] .app-header.header-visible {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  border-bottom-color: transparent;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 100%;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex: 1;
+  min-width: 0;
+}
+
+.logo-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  padding: 6px;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .logo-wrapper {
+  background: rgba(55, 65, 81, 0.5);
+}
+
+.app-logo {
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+}
+
+.title-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-subtitle {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
 }
 
 .canvas-wrapper {
   flex: 1;
   position: relative;
+  overflow: hidden;
+  margin-top: 73px;
+  height: calc(100vh - 73px);
 }
 
 .keyboard-shortcuts {

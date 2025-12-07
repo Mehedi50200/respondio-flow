@@ -24,53 +24,58 @@ const { theme, toggleTheme } = useTheme()
 
 <style scoped>
 .theme-toggle {
-  position: fixed;
-  top: var(--spacing-md);
-  left: var(--spacing-md);
-  z-index: 1000;
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
   outline: none;
+  position: relative;
 }
 
 .toggle-track {
-  width: 56px;
-  height: 32px;
+  width: 52px;
+  height: 28px;
   background: var(--color-border);
-  border-radius: 16px;
+  border-radius: 14px;
   position: relative;
   transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 2px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .theme-toggle.is-dark .toggle-track {
   background: var(--color-primary);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .toggle-thumb {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   background: var(--color-surface-elevated);
   border-radius: 50%;
   position: absolute;
   top: 2px;
   left: 2px;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   color: var(--color-text-primary);
 }
 
 .theme-toggle.is-dark .toggle-thumb {
   transform: translateX(24px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
 }
 
 .theme-toggle:hover .toggle-thumb {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.theme-toggle.is-dark:hover .toggle-thumb {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 .theme-toggle:active .toggle-thumb {
@@ -82,8 +87,8 @@ const { theme, toggleTheme } = useTheme()
 }
 
 .icon {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   filter: brightness(0) saturate(100%) invert(var(--icon-invert, 0));
 }
@@ -93,7 +98,11 @@ const { theme, toggleTheme } = useTheme()
 }
 
 .theme-toggle:hover .icon {
-  transform: scale(1.1);
+  transform: scale(1.15) rotate(15deg);
+}
+
+.theme-toggle.is-dark:hover .icon {
+  transform: scale(1.15) rotate(-15deg);
 }
 </style>
 

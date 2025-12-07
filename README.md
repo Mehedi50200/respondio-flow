@@ -132,7 +132,5 @@ npm test
 
 ### Live Demo
 
-🌐 **Live Application:** [View on Vercel](https://your-vercel-url.vercel.app)  
-📦 **Repository:** [View on GitHub](https://github.com/your-username/respondio-flow)
-
-> **Note:** Replace the URLs above with your actual deployment and repository links before submission.
+🌐 **Live Application:** [View on Vercel](https://respondio-flow.vercel.app/)  
+📦 **Repository:** [View on GitHub](https://github.com/Mehedi50200/respondio-flow)
