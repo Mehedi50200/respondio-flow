@@ -1,6 +1,16 @@
-# Respond.io Flow Chart Application
+<div align="center">
+  <img src="src/assets/logo.png" alt="Respond.io Logo" width="120" />
+  
+  <br />
+  
+  <h1>Respond.io Flow Chart Application</h1>
+  
+  <p>
+    <em>A Vue 3 application for creating, editing, and managing flow chart nodes with a visual canvas interface.</em>
+  </p>
+</div>
 
-A Vue 3 application for creating, editing, and managing flow chart nodes with a visual canvas interface.
+---
 
 ## Technology Stack
 
