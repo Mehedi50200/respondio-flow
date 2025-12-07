@@ -20,7 +20,7 @@
         </div>
       </div>
     </header>
-    <div class="canvas-wrapper">
+    <div class="canvas-wrapper" :class="{ 'header-hidden': isHeaderHidden }">
       <VueFlow
         v-model:nodes="nodes"
         v-model:edges="edges"
@@ -99,6 +99,17 @@ const isHeaderHidden = ref(false)
 let hideTimeout: ReturnType<typeof setTimeout> | null = null
 let showTimeout: ReturnType<typeof setTimeout> | null = null
 
+const clearHeaderTimeouts = () => {
+  if (hideTimeout) {
+    clearTimeout(hideTimeout)
+    hideTimeout = null
+  }
+  if (showTimeout) {
+    clearTimeout(showTimeout)
+    showTimeout = null
+  }
+}
+
 const handleUndoRedo = (event: KeyboardEvent) => {
   const target = event.target as HTMLElement
   if (
@@ -133,14 +144,7 @@ const handleMouseMove = (event: MouseEvent) => {
   const mouseY = event.clientY
   const headerHeight = 73
   
-  if (hideTimeout) {
-    clearTimeout(hideTimeout)
-    hideTimeout = null
-  }
-  if (showTimeout) {
-    clearTimeout(showTimeout)
-    showTimeout = null
-  }
+  clearHeaderTimeouts()
 
   if (mouseY < headerHeight + 20) {
     showTimeout = setTimeout(() => {
@@ -154,14 +158,7 @@ const handleMouseMove = (event: MouseEvent) => {
 }
 
 const handleMouseEnter = () => {
-  if (hideTimeout) {
-    clearTimeout(hideTimeout)
-    hideTimeout = null
-  }
-  if (showTimeout) {
-    clearTimeout(showTimeout)
-    showTimeout = null
-  }
+  clearHeaderTimeouts()
   isHeaderHidden.value = false
 }
 
@@ -185,14 +182,7 @@ onUnmounted(() => {
     clearTimeout(saveStateTimeout)
     saveStateTimeout = null
   }
-  if (hideTimeout) {
-    clearTimeout(hideTimeout)
-    hideTimeout = null
-  }
-  if (showTimeout) {
-    clearTimeout(showTimeout)
-    showTimeout = null
-  }
+  clearHeaderTimeouts()
 })
 
 const isCreateModalOpen = ref(false)
@@ -268,17 +258,9 @@ const nodes = computed({
       const oldNode = store.nodes.find((n) => String(n.id) === String(newNode.id))
       if (!oldNode) return true
       
-      if (oldNode.position.x !== newNode.position.x || oldNode.position.y !== newNode.position.y) {
-        return true
-      }
-      
-      const oldDataStr = JSON.stringify(oldNode.data)
-      const newDataStr = JSON.stringify(newNode.data)
-      if (oldDataStr !== newDataStr) {
-        return true
-      }
-      
-      return false
+      return oldNode.position.x !== newNode.position.x || 
+             oldNode.position.y !== newNode.position.y ||
+             JSON.stringify(oldNode.data) !== JSON.stringify(newNode.data)
     })
     
     if (hasRealChanges) {
@@ -472,6 +454,13 @@ const handleNodeCreated = () => {
   overflow: hidden;
   margin-top: 73px;
   height: calc(100vh - 73px);
+  transition: margin-top 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.canvas-wrapper.header-hidden {
+  margin-top: 0;
+  height: 100vh;
 }
 
 .keyboard-shortcuts {

@@ -45,33 +45,29 @@ export function useHistory() {
     }
   }
 
+  const restoreState = (state: HistoryState) => {
+    const restoredNodes = JSON.parse(JSON.stringify(state.nodes))
+    store.setNodes(restoredNodes)
+    store.setEdges(buildEdgesFromVueFlowNodes(restoredNodes))
+  }
+
   const undo = () => {
     if (!canUndo.value) return
-
     isUndoing.value = true
     historyIndex.value--
-
     const previousState = history.value[historyIndex.value]
     if (previousState) {
-      const restoredNodes = JSON.parse(JSON.stringify(previousState.nodes))
-      store.setNodes(restoredNodes)
-      const edges = buildEdgesFromVueFlowNodes(restoredNodes)
-      store.setEdges(edges)
+      restoreState(previousState)
     }
   }
 
   const redo = () => {
     if (!canRedo.value) return
-
     isUndoing.value = true
     historyIndex.value++
-
     const nextState = history.value[historyIndex.value]
     if (nextState) {
-      const restoredNodes = JSON.parse(JSON.stringify(nextState.nodes))
-      store.setNodes(restoredNodes)
-      const edges = buildEdgesFromVueFlowNodes(restoredNodes)
-      store.setEdges(edges)
+      restoreState(nextState)
     }
   }
 
