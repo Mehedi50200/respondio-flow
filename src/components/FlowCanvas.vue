@@ -327,33 +327,4 @@ kbd {
   color: var(--color-text-primary);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
-
-.vue-flow__edge-label {
-  font-size: 12px !important;
-  font-weight: 500 !important;
-  fill: #ffffff !important;
-  pointer-events: none;
-  padding: 0 12px !important;
-}
-
-.vue-flow__edge-labelwrapper {
-  padding: 0 12px !important;
-}
-
-.vue-flow__edge[data-label*="Success"] .vue-flow__edge-labelbg,
-.vue-flow__edge[data-label="Success"] .vue-flow__edge-labelbg {
-  fill: var(--color-node-success) !important;
-}
-
-.vue-flow__edge[data-label*="Failure"] .vue-flow__edge-labelbg,
-.vue-flow__edge[data-label="Failure"] .vue-flow__edge-labelbg {
-  fill: var(--color-node-failure) !important;
-}
-
-.vue-flow__edge[data-label*="Success"] .vue-flow__edge-label,
-.vue-flow__edge[data-label="Success"] .vue-flow__edge-label,
-.vue-flow__edge[data-label*="Failure"] .vue-flow__edge-label,
-.vue-flow__edge[data-label="Failure"] .vue-flow__edge-label {
-  fill: #ffffff !important;
-}
 </style>

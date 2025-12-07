@@ -296,7 +296,7 @@ export function transformPayloadToEdges(payloadData: PayloadNode[]): VueFlowEdge
         ry: 6,
       }
       
-      labelBgPadding = [2, 12]
+      labelBgPadding = [10, 5]
       labelBgBorderRadius = 6
     }
 
