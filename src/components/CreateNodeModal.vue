@@ -19,6 +19,7 @@
               v-model="formData.type" 
               required
               @change="clearFieldError('type')"
+              class="form-select"
               :class="{ 'input-error': fieldErrors.type }"
             >
               <option value="">Select a type</option>
@@ -41,6 +42,7 @@
               maxlength="100"
               @blur="validateTitle"
               @input="clearFieldError('title')"
+              class="form-input"
               :class="{ 'input-error': fieldErrors.title }"
             />
             <span v-if="fieldErrors.title" class="field-error">{{ fieldErrors.title }}</span>
@@ -56,6 +58,7 @@
               rows="4"
               maxlength="500"
               @input="clearFieldError('description')"
+              class="message-textarea"
               :class="{ 'input-error': fieldErrors.description }"
             ></textarea>
             <span v-if="fieldErrors.description" class="field-error">{{ fieldErrors.description }}</span>
@@ -64,7 +67,7 @@
 
           <div v-if="formData.type === 'businessHours'" class="form-group">
             <label for="timezone">Timezone</label>
-            <select id="timezone" v-model="formData.timezone">
+            <select id="timezone" v-model="formData.timezone" class="form-select">
               <option value="UTC">UTC</option>
               <option value="America/New_York">America/New_York</option>
               <option value="America/Los_Angeles">America/Los_Angeles</option>
@@ -256,6 +259,7 @@ watch(() => props.isOpen, (isOpen) => {
 </script>
 
 <style scoped>
+@import '@/styles/components.css';
 
 .modal-container {
   background: var(--color-surface-elevated);
@@ -272,7 +276,6 @@ watch(() => props.isOpen, (isOpen) => {
 .delete-confirm-modal {
   animation: slideUp 0.3s;
 }
-
 
 .modal-header {
   display: flex;
@@ -295,18 +298,6 @@ watch(() => props.isOpen, (isOpen) => {
 
 .modal-form {
   padding: var(--spacing-lg);
-}
-
-.form-group input,
-.form-group textarea,
-.form-group select {
-  padding: 10px 12px;
-  background: var(--color-background);
-  border: 1px solid var(--color-border);
-}
-
-.form-group textarea {
-  min-height: 80px;
 }
 
 .parent-info {

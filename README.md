@@ -105,8 +105,34 @@ npm test
 
 ## Deployment
 
-Deploy to Vercel:
-```bash
-npm i -g vercel
-vercel
-```
+### Deploy to Vercel
+
+1. **Install Vercel CLI:**
+   ```bash
+   npm i -g vercel
+   ```
+
+2. **Login to Vercel:**
+   ```bash
+   vercel login
+   ```
+
+3. **Deploy:**
+   ```bash
+   vercel --prod
+   ```
+
+4. **Follow the prompts** to complete deployment.
+
+### Deployment Configuration
+
+- **Build Command:** `npm run build`
+- **Output Directory:** `dist`
+- **Node Version:** 18.20.8 (automatically detected from `.nvmrc`)
+
+### Live Demo
+
+🌐 **Live Application:** [View on Vercel](https://your-vercel-url.vercel.app)  
+📦 **Repository:** [View on GitHub](https://github.com/your-username/respondio-flow)
+
+> **Note:** Replace the URLs above with your actual deployment and repository links before submission.
