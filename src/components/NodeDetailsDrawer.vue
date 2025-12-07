@@ -4,10 +4,12 @@
       <div class="drawer-header">
         <div class="header-content">
           <div class="header-top-row">
-            <div class="node-icon-header" :class="nodeIconClass">
-              <img :src="nodeIconSrc" :alt="nodeTitle" />
+            <div class="header-left">
+              <div class="node-icon-header" :class="nodeIconClass">
+                <img :src="nodeIconSrc" :alt="nodeTitle" />
+              </div>
+              <h2 class="node-title-header">{{ nodeTitle }}</h2>
             </div>
-            <h2 class="node-title-header">{{ nodeTitle }}</h2>
             <button class="close-button" @click="handleClose" aria-label="Close drawer">
               <img :src="closeIcon" alt="Close" />
             </button>
@@ -679,8 +681,17 @@ watch(
 .header-top-row {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
   justify-content: space-between;
+  width: 100%;
+  gap: var(--spacing-md);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex: 1;
+  min-width: 0;
 }
 
 .node-icon-header {
@@ -726,6 +737,8 @@ watch(
   font-weight: 600;
   color: var(--color-text-primary);
   flex: 1;
+  text-align: left;
+  min-width: 0;
 }
 
 .node-description-header {
